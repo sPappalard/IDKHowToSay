@@ -1,0 +1,7 @@
+openpyxl
+playsound==1.2.2
+flask 
+flask-cors 
+pandas 
+gtts  
+requests
