@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import random
@@ -11,11 +11,9 @@ import requests
 from threading import Thread
 import logging
 
-
 app = Flask(__name__)
-CORS(app)  # Abilita CORS per tutte le rotte
+CORS(app)
 
-# Configurazione logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -24,64 +22,67 @@ class EnglishLearningBackend:
         self.vocabulary = []
         self.current_word = None
         self.current_mode = None
+        self.first_language = None
+        self.second_language = None
+        self.audio_enabled = True
         self.score = 0
         self.questions_asked = 0
         self.max_questions = 50
         self.passes_left = 3
         self.max_passes = 3
         self.game_active = False
+        self.solution_visible = False
+        
+        # Language mapping for TTS
+        self.language_codes = {
+            'italian': 'it',
+            'english': 'en', 
+            'french': 'fr',
+            'spanish': 'es',
+            'german': 'de'
+        }
 
     def parse_variants(self, text):
-        """Estrae tutte le varianti possibili da un testo con separatori multipli."""
         if not text or not isinstance(text, str):
             return []
         
-        # Prima pulisce il testo
         text = text.strip()
         
-        # Pattern per catturare diversi tipi di separatori
         patterns = [
-            r'([^/,\\()]+)/([^/,\\()]+)',  # word1/word2
-            r'([^/,\\()]+),\s*([^/,\\()]+)',  # word1, word2
-            r'([^/,\\()]+)\\([^/,\\()]+)',  # word1\word2
-            r'([^/,\\()]+)\(([^/,\\()]+)\)',  # word1(word2)
+            r'([^/,\\()]+)/([^/,\\()]+)',
+            r'([^/,\\()]+),\s*([^/,\\()]+)',
+            r'([^/,\\()]+)\\([^/,\\()]+)',
+            r'([^/,\\()]+)\(([^/,\\()]+)\)',
         ]
         
         variants = []
         original_text = text
         
-        # Applica tutti i pattern fino a che non trova più varianti
         while True:
             found_variant = False
             for pattern in patterns:
                 matches = re.findall(pattern, text)
                 if matches:
                     for match in matches:
-                        # Aggiunge tutte le parti trovate
                         for part in match:
                             clean_part = part.strip()
                             if clean_part and clean_part not in variants:
                                 variants.append(clean_part)
                         found_variant = True
-                    # Sostituisce le parti trovate per continuare la ricerca
                     text = re.sub(pattern, lambda m: m.group(1), text)
             
             if not found_variant:
                 break
         
-        # Se non ha trovato varianti, usa il testo originale
         if not variants:
             variants.append(original_text.strip())
         else:
-            # Aggiunge anche eventuali parti rimaste
             remaining = text.strip()
             if remaining and remaining not in variants:
                 variants.append(remaining)
         
-        # Pulisce e filtra le varianti
         clean_variants = []
         for variant in variants:
-            # Rimuove caratteri speciali residui
             clean = re.sub(r'[/,\\()]', '', variant).strip()
             if clean and clean not in clean_variants:
                 clean_variants.append(clean)
@@ -89,14 +90,9 @@ class EnglishLearningBackend:
         return clean_variants if clean_variants else [original_text.strip()]
 
     def convert_google_sheets_url(self, url):
-        """Converte un URL di Google Sheets in formato CSV export."""
-        # Pattern per diversi tipi di URL Google Sheets
         patterns = [
-            # URL completo con /edit
             r'https://docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)/edit.*',
-            # URL con /edit#gid=
             r'https://docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)/edit#gid=(\d+)',
-            # URL già in formato export
             r'https://docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)/export\?format=csv.*',
         ]
         
@@ -104,93 +100,89 @@ class EnglishLearningBackend:
             match = re.match(pattern, url)
             if match:
                 sheet_id = match.group(1)
-                # Crea URL per export CSV
                 return f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
         
-        # Se non corrisponde ai pattern, prova comunque
         return url
 
     def load_google_sheet(self, url):
-        """Carica dati da Google Sheets tramite URL."""
         try:
-            # Converte l'URL in formato CSV export
             csv_url = self.convert_google_sheets_url(url)
-            
-            # Scarica i dati
             response = requests.get(csv_url, timeout=10)
             response.raise_for_status()
             
-            # Legge il CSV con pandas
             from io import StringIO
             df = pd.read_csv(StringIO(response.text))
             
             if len(df.columns) < 2:
-                return {"success": False, "message": "Il foglio deve avere almeno 2 colonne!"}
+                return {"success": False, "message": "Sheet must have at least 2 columns!"}
             
-            # Processa i dati
             return self.process_vocabulary_data(df)
             
         except requests.exceptions.RequestException as e:
-            return {"success": False, "message": f"Errore di connessione: {str(e)}"}
+            return {"success": False, "message": f"Connection error: {str(e)}"}
         except Exception as e:
-            return {"success": False, "message": f"Errore nel caricamento: {str(e)}"}
+            return {"success": False, "message": f"Loading error: {str(e)}"}
 
     def process_vocabulary_data(self, df):
-        """Processa i dati del vocabolario da un DataFrame pandas."""
-        # Prende le prime due colonne e rimuove righe vuote
         vocabulary_data = df.iloc[:, :2].dropna()
         
         self.vocabulary = []
         for _, row in vocabulary_data.iterrows():
-            english_raw = str(row.iloc[0]).strip()
-            italian_raw = str(row.iloc[1]).strip()
+            first_raw = str(row.iloc[0]).strip()
+            second_raw = str(row.iloc[1]).strip()
             
-            if english_raw and italian_raw and english_raw.lower() != 'nan' and italian_raw.lower() != 'nan':
-                # Estrae le varianti per entrambe le lingue
-                english_variants = self.parse_variants(english_raw)
-                italian_variants = self.parse_variants(italian_raw)
+            if first_raw and second_raw and first_raw.lower() != 'nan' and second_raw.lower() != 'nan':
+                first_variants = self.parse_variants(first_raw)
+                second_variants = self.parse_variants(second_raw)
                 
-                # Salva le varianti insieme al testo originale per la visualizzazione
                 self.vocabulary.append({
-                    'english_display': english_raw,
-                    'italian_display': italian_raw,
-                    'english_variants': english_variants,
-                    'italian_variants': italian_variants,
-                    'english_main': english_variants[0] if english_variants else english_raw,
-                    'italian_main': italian_variants[0] if italian_variants else italian_raw
+                    'first_display': first_raw,
+                    'second_display': second_raw,
+                    'first_variants': first_variants,
+                    'second_variants': second_variants,
+                    'first_main': first_variants[0] if first_variants else first_raw,
+                    'second_main': second_variants[0] if second_variants else second_raw
                 })
         
         count = len(self.vocabulary)
         if count > 0:
             return {
                 "success": True, 
-                "message": f"Trovati {count} elementi e salvati correttamente!",
+                "message": f"Found {count} items and saved successfully!",
                 "count": count
             }
         else:
-            return {"success": False, "message": "Nessun dato valido trovato"}
+            return {"success": False, "message": "No valid data found"}
 
     def load_excel(self, file_content, filename):
-        """Carica dati da file Excel/CSV."""
         try:
-            # Legge il file
             if filename.endswith('.csv'):
                 df = pd.read_csv(file_content)
             else:
                 df = pd.read_excel(file_content)
             
             if len(df.columns) < 2:
-                return {"success": False, "message": "Il file deve avere almeno 2 colonne!"}
+                return {"success": False, "message": "File must have at least 2 columns!"}
             
-            # Processa i dati
             return self.process_vocabulary_data(df)
             
         except Exception as e:
-            return {"success": False, "message": f"Errore nel caricamento: {str(e)}"}
+            return {"success": False, "message": f"Loading error: {str(e)}"}
+
+    def set_languages(self, first_lang, second_lang):
+        self.first_language = first_lang.lower()
+        self.second_language = second_lang.lower()
+        self.audio_enabled = first_lang.lower() != 'other' and second_lang.lower() != 'other'
+        
+        return {
+            "success": True,
+            "audio_enabled": self.audio_enabled,
+            "message": "Languages set successfully"
+        }
 
     def start_game(self, mode, max_questions, max_passes):
         if not self.vocabulary:
-            return {"success": False, "message": "Nessun vocabolario caricato!"}
+            return {"success": False, "message": "No vocabulary loaded!"}
         
         self.current_mode = mode
         self.score = 0
@@ -199,6 +191,7 @@ class EnglishLearningBackend:
         self.max_passes = int(max_passes)
         self.passes_left = self.max_passes
         self.game_active = True
+        self.solution_visible = False
         
         return self.next_question()
 
@@ -208,13 +201,14 @@ class EnglishLearningBackend:
             
         self.current_word = random.choice(self.vocabulary)
         self.questions_asked += 1
+        self.solution_visible = False
         
-        if self.current_mode == "eng_ita":
-            question_text = f"Traduci in italiano:\n\n'{self.current_word['english_display']}'"
-            question_type = "eng_ita"
+        if self.current_mode == "first_second":
+            question_text = f"Translate to second language:\n\n'{self.current_word['first_display']}'"
+            question_type = "first_second"
         else:
-            question_text = f"Traduci in inglese:\n\n'{self.current_word['italian_display']}'"
-            question_type = "ita_eng"
+            question_text = f"Translate to first language:\n\n'{self.current_word['second_display']}'"
+            question_type = "second_first"
             
         return {
             "success": True,
@@ -224,90 +218,144 @@ class EnglishLearningBackend:
             "score": self.score,
             "questions_asked": self.questions_asked,
             "max_questions": self.max_questions,
-            "passes_left": self.passes_left
+            "passes_left": self.passes_left,
+            "audio_enabled": self.audio_enabled,
+            "solution_visible": False
         }
+
+    def show_solution(self):
+        if not self.game_active or not self.current_word:
+            return {"success": False, "message": "No active question"}
+        
+        self.solution_visible = True
+        
+        if self.current_mode == "first_second":
+            solution = self.current_word['second_display']
+        else:
+            solution = self.current_word['first_display']
+            
+        return {
+            "success": True,
+            "solution": solution,
+            "solution_visible": True
+        }
+
+    def hide_solution(self):
+        self.solution_visible = False
+        return {"success": True, "solution_visible": False}
 
     def check_answer(self, user_answer):
         if not self.game_active or not self.current_word:
-            return {"success": False, "message": "Nessuna domanda attiva"}
+            return {"success": False, "message": "No active question"}
         
         user_answer = user_answer.strip().lower()
         
-        if self.current_mode == "eng_ita":
-            correct_variants = [var.lower() for var in self.current_word['italian_variants']]
-            display_answer = self.current_word['italian_display']
+        if self.current_mode == "first_second":
+            correct_variants = [var.lower() for var in self.current_word['second_variants']]
+            display_answer = self.current_word['second_display']
         else:
-            correct_variants = [var.lower() for var in self.current_word['english_variants']]
-            display_answer = self.current_word['english_display']
+            correct_variants = [var.lower() for var in self.current_word['first_variants']]
+            display_answer = self.current_word['first_display']
         
         if user_answer in correct_variants:
             self.score += 1
             result = {
                 "correct": True,
-                "message": "✅ CORRETTO!",
+                "message": "CORRECT!",
                 "score": self.score
             }
         else:
             self.score -= 1
             result = {
                 "correct": False,
-                "message": f"❌ SBAGLIATO!\nRisposta corretta: {display_answer}",
+                "message": f"WRONG!\nCorrect answer: {display_answer}",
                 "correct_answer": display_answer,
-                "score": self.score
+                "score": self.score,
+                "solution_visible": True
             }
+            self.solution_visible = True
         
         return result
 
     def pass_question(self):
         if not self.game_active:
-            return {"success": False, "message": "Nessuna partita attiva"}
+            return {"success": False, "message": "No active game"}
             
         if self.passes_left > 0:
             self.passes_left -= 1
+            
+            # Show solution when passing
+            if self.current_mode == "first_second":
+                solution = self.current_word['second_display']
+            else:
+                solution = self.current_word['first_display']
+            
+            self.solution_visible = True
+            
             return {
                 "success": True, 
-                "message": "⏭️ Domanda saltata",
-                "passes_left": self.passes_left
+                "message": "Question skipped",
+                "passes_left": self.passes_left,
+                "solution": solution,
+                "solution_visible": True
             }
         else:
-            return {"success": False, "message": "Non hai più passi disponibili!"}
+            return {"success": False, "message": "No more passes available!"}
 
     def play_audio(self):
-        if not self.game_active or not self.current_word:
-            return {"success": False, "message": "Nessuna parola da pronunciare"}
+        if not self.game_active or not self.current_word or not self.audio_enabled:
+            return {"success": False, "message": "Audio not available"}
         
         def speak():
             try:
-                # Pronuncia sempre la parola inglese principale
-                word_to_speak = self.current_word['english_main']
+                # Determine what word is currently visible and use its correct language
+                if self.solution_visible:
+                    # Solution is visible - speak the solution word in solution's language
+                    if self.current_mode == "first_second":
+                        # We're translating first->second, so solution is second language
+                        word_to_speak = self.current_word['second_main']
+                        lang_code = self.language_codes.get(self.second_language, 'en')
+                        logger.info(f"Speaking solution: '{word_to_speak}' in {self.second_language} ({lang_code})")
+                    else:
+                        # We're translating second->first, so solution is first language
+                        word_to_speak = self.current_word['first_main']  
+                        lang_code = self.language_codes.get(self.first_language, 'en')
+                        logger.info(f"Speaking solution: '{word_to_speak}' in {self.first_language} ({lang_code})")
+                else:
+                    # Question is visible - speak the question word in question's language
+                    if self.current_mode == "first_second":
+                        # We're translating first->second, so question is first language
+                        word_to_speak = self.current_word['first_main']
+                        lang_code = self.language_codes.get(self.first_language, 'en')
+                        logger.info(f"Speaking question: '{word_to_speak}' in {self.first_language} ({lang_code})")
+                    else:
+                        # We're translating second->first, so question is second language
+                        word_to_speak = self.current_word['second_main']
+                        lang_code = self.language_codes.get(self.second_language, 'en')
+                        logger.info(f"Speaking question: '{word_to_speak}' in {self.second_language} ({lang_code})")
                 
-                # Crea il file audio con gTTS
-                tts = gTTS(text=word_to_speak, lang='en')
+                tts = gTTS(text=word_to_speak, lang=lang_code)
                 
-                # Usa un file temporaneo
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as tmp_file:
                     tmp_filename = tmp_file.name
                     tts.save(tmp_filename)
                 
-                # Riproduce l'audio
                 playsound(tmp_filename)
                 
-                # Pulisce il file temporaneo
                 try:
                     os.unlink(tmp_filename)
                 except:
                     pass
                     
             except Exception as e:
-                logger.error(f"Errore audio: {e}")
+                logger.error(f"Audio error: {e}")
         
-        # Esegue in thread separato per non bloccare
         Thread(target=speak, daemon=True).start()
-        return {"success": True, "message": "Riproduzione audio avviata"}
+        return {"success": True, "message": "Audio playback started"}
             
     def end_game(self):
         if not self.game_active:
-            return {"success": False, "message": "Nessuna partita attiva"}
+            return {"success": False, "message": "No active game"}
             
         percentage = (self.score / self.questions_asked * 100) if self.questions_asked > 0 else 0
         
@@ -319,16 +367,32 @@ class EnglishLearningBackend:
             "final_score": self.score,
             "questions_asked": self.questions_asked,
             "percentage": round(percentage, 1),
-            "message": f"GIOCO TERMINATO! Punteggio: {self.score}/{self.questions_asked} ({percentage:.1f}%)"
+            "message": f"GAME ENDED! Score: {self.score}/{self.questions_asked} ({percentage:.1f}%)"
         }
 
-# Istanza globale del backend
+# Global backend instance
 backend = EnglishLearningBackend()
 
-# Route API
+# Routes
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/static/examples/<filename>')
+def download_example(filename):
+    try:
+        return send_from_directory('static/examples', filename, as_attachment=True)
+    except:
+        return jsonify({"error": "File not found"}), 404
+
+@app.route('/api/set_languages', methods=['POST'])
+def api_set_languages():
+    data = request.get_json()
+    first_lang = data.get('first_language', '')
+    second_lang = data.get('second_language', '')
+    
+    result = backend.set_languages(first_lang, second_lang)
+    return jsonify(result)
 
 @app.route('/api/load_google_sheet', methods=['POST'])
 def api_load_google_sheet():
@@ -336,7 +400,7 @@ def api_load_google_sheet():
     url = data.get('url', '').strip()
     
     if not url:
-        return jsonify({"success": False, "message": "URL mancante"})
+        return jsonify({"success": False, "message": "URL missing"})
     
     result = backend.load_google_sheet(url)
     return jsonify(result)
@@ -344,11 +408,11 @@ def api_load_google_sheet():
 @app.route('/api/load_excel', methods=['POST'])
 def api_load_excel():
     if 'file' not in request.files:
-        return jsonify({"success": False, "message": "Nessun file caricato"})
+        return jsonify({"success": False, "message": "No file uploaded"})
     
     file = request.files['file']
     if file.filename == '':
-        return jsonify({"success": False, "message": "Nessun file selezionato"})
+        return jsonify({"success": False, "message": "No file selected"})
     
     result = backend.load_excel(file, file.filename)
     return jsonify(result)
@@ -366,6 +430,16 @@ def api_start_game():
 @app.route('/api/next_question', methods=['GET'])
 def api_next_question():
     result = backend.next_question()
+    return jsonify(result)
+
+@app.route('/api/show_solution', methods=['POST'])
+def api_show_solution():
+    result = backend.show_solution()
+    return jsonify(result)
+
+@app.route('/api/hide_solution', methods=['POST'])
+def api_hide_solution():
+    result = backend.hide_solution()
     return jsonify(result)
 
 @app.route('/api/check_answer', methods=['POST'])
@@ -397,7 +471,8 @@ def api_status():
         "game_active": backend.game_active,
         "vocabulary_count": len(backend.vocabulary),
         "score": backend.score,
-        "questions_asked": backend.questions_asked
+        "questions_asked": backend.questions_asked,
+        "audio_enabled": backend.audio_enabled
     })
 
 if __name__ == '__main__':
