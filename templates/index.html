@@ -5,6 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Language Learning Game</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            --secondary-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+            --danger-gradient: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
+            --dark-gradient: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            --surface: rgba(255, 255, 255, 0.05);
+            --surface-hover: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,15 +35,32 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
             min-height: 100vh;
             overflow-x: hidden;
             padding: 20px;
+            color: var(--text-primary);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(217, 70, 239, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
@@ -28,7 +68,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 3rem;
             animation: slideDown 1s ease-out;
         }
 
@@ -37,438 +77,504 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        .title {
-            font-size: 3.5rem;
-            font-weight: 800;
-            background: linear-gradient(45deg, #fff, #f8f9fa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-            text-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 300;
-        }
-
-        .card {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            animation: slideUp 0.8s ease-out;
-            transition: all 0.3s ease;
-        }
-
         @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
+            from { transform: translateY(30px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+
+        .card {
+            background: var(--glass);
+            
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.6s ease-out;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: visible;
+            z-index: auto;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+        }
+
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .language-selector {
             position: fixed;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
             z-index: 1000;
+            display: flex;
+            gap: 8px;
+            background: var(--glass);
+            padding: 8px;
+            border-radius: 12px;
+            
+            border: 1px solid var(--glass-border);
         }
 
         .lang-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            color: white;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
             padding: 8px 12px;
             cursor: pointer;
-            margin: 0 2px;
             transition: all 0.3s ease;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
+            font-weight: 500;
         }
 
         .lang-btn.active {
-            background: rgba(255, 255, 255, 0.4);
-            border-color: rgba(255, 255, 255, 0.6);
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
         }
 
-        .lang-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .lang-btn:hover:not(.active) {
+            background: var(--surface-hover);
+            color: var(--text-primary);
         }
 
-        .load-section {
+        .custom-select {
+            position: relative;
             display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 12px;
+            overflow: visible;
+            z-index: 100;
         }
 
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
+        .select-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.025em;
+        }
+
+        .select-button {
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            color: var(--text-primary);
             cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; }
-        .btn-secondary { background: linear-gradient(45deg, #2196F3, #1976D2); color: white; }
-        .btn-danger { background: linear-gradient(45deg, #f44336, #d32f2f); color: white; }
-        .btn-warning { background: linear-gradient(45deg, #ff9800, #f57c00); color: white; }
-        .btn-info { background: linear-gradient(45deg, #9c27b0, #7b1fa2); color: white; }
-        .btn-dark { background: linear-gradient(45deg, #555, #333); color: white; }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .form-control, .select-control {
-            flex: 1;
-            padding: 15px 20px;
-            border: none;
-            border-radius: 50px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            justify-content: space-between;
             font-size: 1rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
+            font-weight: 500;
+            min-height: 56px;
         }
 
-        .select-control {
+        .select-button:hover {
+            background: var(--surface-hover);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .select-button.active {
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .select-arrow {
+            transition: transform 0.3s ease;
+            font-size: 0.75rem;
+        }
+
+        .select-button.open .select-arrow {
+            transform: rotate(180deg);
+        }
+
+        .select-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(30, 30, 46, 0.98);
+            
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            margin-top: 8px;
+            padding: 8px;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px) scale(0.95);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            box-shadow: var(--shadow-xl);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .select-options.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .select-option {
+            padding: 14px 16px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .select-control option {
-            background: #333;
-            color: white;
+        .select-option:hover {
+            background: var(--surface-hover);
+            color: var(--text-primary);
         }
 
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+        .select-option.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
-        .form-control:focus, .select-control:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        .select-option.disabled:hover {
+            background: transparent;
         }
 
-        .status {
-            text-align: center;
-            padding: 15px;
-            border-radius: 15px;
-            margin: 20px 0;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .status.success {
-            background: rgba(76, 175, 80, 0.2);
-            color: #000000;
-            font-weight: bold;
-            text-shadow: 0 0 2px white;
-        }
-
-        .status.error {
-            background: rgba(244, 67, 54, 0.2);
-            color: #f44336;
-            border: 1px solid rgba(244, 67, 54, 0.3);
-        }
-
-        .status.loading {
-            background: rgba(255, 152, 0, 0.2);
-            color: #ff9800;
-            border: 1px solid rgba(255, 152, 0, 0.3);
+        .language-flag {
+            font-size: 1.2rem;
         }
 
         .language-settings {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 20px 0;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            overflow: visible;
+            position: relative;
+            z-index: 1000;
         }
 
-        .language-item {
-            display: flex;
-            flex-direction: column;
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             gap: 10px;
+            position: relative;
+            overflow: hidden;
+            min-height: 56px;
+            letter-spacing: 0.025em;
         }
 
-        .language-label {
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary { 
+            background: var(--secondary-gradient);
             color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary { 
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-danger { 
+            background: var(--danger-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-warning { 
+            background: var(--warning-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-info { 
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-dark { 
+            background: var(--dark-gradient);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .btn:active {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn:disabled::before {
+            display: none;
+        }
+
+        .form-control {
+            flex: 1;
+            padding: 16px 24px;
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            background: var(--surface);
+            color: var(--text-primary);
+            font-size: 1rem;
+            
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-control:focus {
+            outline: none;
+            background: var(--surface-hover);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .status {
+            text-align: center;
+            padding: 16px 24px;
+            border-radius: 16px;
+            margin: 1.5rem 0;
             font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .status.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .status.loading {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .load-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .url-input-section {
+            margin-top: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .hint-text {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.4;
         }
 
         .settings-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
         }
 
         .setting-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 24px;
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            gap: 1rem;
+        }
+
+        .setting-item:hover {
+            background: var(--surface-hover);
+            transform: translateY(-2px);
         }
 
         .setting-label {
-            color: white;
             font-weight: 500;
+            color: var(--text-primary);
+            flex: 1;
         }
 
-        .setting-input {
-            padding: 8px 15px;
+        .number-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--glass);
+            padding: 8px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .number-btn {
+            width: 40px;
+            height: 40px;
             border: none;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: var(--primary-gradient);
             color: white;
-            width: 80px;
-            text-align: center;
-        }
-
-        .game-modes {
-            display: flex;
-            gap: 30px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-
-        .mode-btn {
-            padding: 25px 40px;
             font-size: 1.2rem;
-            border-radius: 20px;
-            min-width: 220px;
-        }
-
-        .game-screen {
-            display: none;
-        }
-
-        .game-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .score-info {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .score-item {
-            text-align: center;
-            color: white;
-        }
-
-        .score-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            display: block;
-        }
-
-        .score-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .question-card {
-            text-align: center;
-            padding: 40px;
-            margin: 30px 0;
-        }
-
-        .question-text {
-            font-size: 1.8rem;
-            color: white;
-            margin-bottom: 20px;
-            line-height: 1.4;
-        }
-
-        .question-word {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #fff;
-            margin: 20px 0;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .solution-container {
-            display: none;
-            margin: 20px 0;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .solution-text {
-            font-size: 1.2rem;
-            color: white;
             font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .solution-word {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #4CAF50;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .audio-btn {
-            background: linear-gradient(45deg, #9c27b0, #7b1fa2);
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 1.5rem;
-            color: white;
             cursor: pointer;
-            margin: 20px auto;
-            display: block;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .audio-btn:hover {
+        .number-btn:hover {
             transform: scale(1.1);
-            box-shadow: 0 5px 20px rgba(156, 39, 176, 0.4);
+            box-shadow: var(--shadow-md);
         }
 
-        .audio-btn:disabled {
+        .number-btn:active {
+            transform: scale(1.05);
+        }
+
+        .number-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
             transform: none !important;
         }
 
-        .answer-section {
-            margin: 30px 0;
-        }
-
-        .answer-label {
-            color: white;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .answer-input {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
+        .number-display {
+            padding: 12px 20px;
+            background: transparent;
             border: none;
-            border-radius: 50px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 1.3rem;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
             text-align: center;
-            margin: 0 auto;
-            display: block;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
+            min-width: 60px;
+            border-radius: 8px;
         }
 
-        .answer-input:focus {
+        .number-display:focus {
             outline: none;
-            border-color: rgba(255, 255, 255, 0.6);
-            box-shadow: 0 0 30px rgba(255,255,255,0.2);
-            background: rgba(255, 255, 255, 0.3);
+            background: var(--surface);
         }
 
-        .result-message {
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            min-height: 60px;
+        /* Remove browser default number input spinners */
+        .number-display::-webkit-outer-spin-button,
+        .number-display::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .number-display[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .game-modes {
             display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .result-correct {
-            background: linear-gradient(135deg, #4CAF50, #388E3C);
-            color: white;
-            border: 2px solid #2E7D32;
-            text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-
-        .result-incorrect {
-            background: linear-gradient(135deg, #f44336, #D32F2F);
-            color: white;
-            border: 2px solid #C62828;
-            text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-
-        .result-skipped {
-            background: linear-gradient(135deg, #ff9800, #F57C00);
-            color: white;
-            border: 2px solid #EF6C00;
-            text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
-        }
-
-        .game-controls {
-            display: flex;
-            gap: 15px;
+            gap: 2rem;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 30px;
+            margin-top: 2rem;
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            border-radius: 10px;
-            transition: width 0.5s ease;
-            width: 0%;
+        .mode-btn {
+            padding: 24px 48px;
+            font-size: 1.125rem;
+            border-radius: 20px;
+            min-width: 280px;
+            font-weight: 600;
         }
 
         .info-modal {
@@ -483,45 +589,430 @@
             align-items: center;
             z-index: 2000;
             padding: 20px;
+            
         }
 
         .modal-content {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 600px;
-            max-height: 80vh;
+            background: rgba(30, 30, 46, 0.95);
+            
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 700px;
+            max-height: 85vh;
             overflow-y: auto;
-            color: #333;
+            color: var(--text-primary);
             position: relative;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-xl);
+            animation: scaleIn 0.3s ease-out;
+        }
+
+        .modal-language-content {
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-language-content.hidden {
+            display: none !important;
         }
 
         .modal-close {
             position: absolute;
-            top: 15px;
-            right: 20px;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
+            top: 20px;
+            right: 24px;
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
             cursor: pointer;
-            color: #666;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
         }
 
         .modal-close:hover {
-            color: #333;
+            background: var(--surface-hover);
+            color: var(--text-primary);
+            transform: scale(1.1);
         }
 
+        .modal-content h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-content h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 1.5rem 0 1rem 0;
+            color: var(--text-primary);
+        }
+
+        .modal-content p {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-content ul {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        .modal-content li {
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .example-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .example-table th,
+        .example-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .example-table th {
+            background: var(--surface);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .example-table td {
+            color: var(--text-secondary);
+        }
+
+        .example-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .feature-highlight {
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-highlight h5 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-highlight p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Game screen styles */
+        .game-screen, .results-screen {
+            display: none;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .score-info {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .score-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: block;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            border: 1px solid var(--glass-border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary-gradient);
+            border-radius: 12px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+
+        .question-card {
+            text-align: center;
+            padding: 3rem 2rem;
+            margin: 2rem 0;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .question-word {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 2rem 0;
+            padding: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-word::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--primary-gradient);
+        }
+
+        .audio-btn {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            margin: 1.5rem auto;
+            display: block;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .audio-btn:active {
+            transform: scale(1.05);
+        }
+
+        .audio-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .answer-section {
+            margin: 2rem 0;
+        }
+
+        .answer-label {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+            display: block;
+            font-weight: 500;
+        }
+
+        .answer-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px 24px;
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            background: var(--surface);
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            text-align: center;
+            margin: 0 auto;
+            display: block;
+            
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.6);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            background: var(--surface-hover);
+            transform: scale(1.02);
+        }
+
+        .solution-container {
+            display: none;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .solution-text {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+
+        .solution-word {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .result-message {
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 1.125rem;
+            font-weight: 600;
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid transparent;
+            
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .result-correct {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .result-incorrect {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .result-skipped {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 2rem 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            background: var(--surface-hover);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
             .title {
                 font-size: 2.5rem;
             }
             
-            .load-section {
-                flex-direction: column;
+            .language-settings {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
             
-            .language-settings {
+            .load-section {
                 grid-template-columns: 1fr;
             }
             
@@ -533,7 +1024,7 @@
             .mode-btn {
                 min-width: auto;
                 width: 100%;
-                max-width: 300px;
+                max-width: 320px;
             }
             
             .game-header {
@@ -541,17 +1032,57 @@
                 text-align: center;
             }
             
+            .score-info {
+                justify-content: center;
+            }
+            
             .question-word {
                 font-size: 2rem;
+                padding: 1.5rem;
             }
             
             .game-controls {
                 flex-direction: column;
+                max-width: 320px;
+                margin: 2rem auto 0;
             }
             
             .btn {
                 width: 100%;
                 justify-content: center;
+            }
+
+            .card {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .modal-content {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .language-selector {
+                top: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .card {
+                padding: 1.25rem;
+            }
+
+            .answer-input {
+                font-size: 1.125rem;
+            }
+
+            .question-card {
+                padding: 2rem 1rem;
             }
         }
     </style>
@@ -567,27 +1098,109 @@
     <div id="info-modal" class="info-modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeInfoModal()">×</button>
-            <h3 data-text="fileFormatTitle">File Format Information</h3>
+            <h3 data-text="fileFormatTitle">📋 File Format Requirements</h3>
+            
             <div data-text="fileFormatContent">
-                <p><strong>Required Format:</strong></p>
+                <h4>📁 Supported File Types</h4>
                 <ul>
-                    <li>Excel file (.xlsx, .xls) or CSV file (.csv)</li>
-                    <li>First column: First Language words/phrases</li>
-                    <li>Second column: Second Language words/phrases</li>
-                    <li>Multiple variants can be separated by: / , \ ( )</li>
+                    <li><strong>Excel files:</strong> .xlsx, .xls formats</li>
+                    <li><strong>CSV files:</strong> .csv format with UTF-8 encoding</li>
+                    <li><strong>Google Sheets:</strong> Public or shared via link</li>
                 </ul>
-                <br>
-                <p><strong>Example:</strong></p>
-                <table border="1" style="width:100%; border-collapse: collapse;">
-                    <tr><th>First Language</th><th>Second Language</th></tr>
-                    <tr><td>house/home</td><td>casa</td></tr>
-                    <tr><td>car, automobile</td><td>macchina, auto</td></tr>
-                    <tr><td>book</td><td>libro</td></tr>
+
+                <div class="feature-highlight">
+                    <h5>🏗️ Required Structure</h5>
+                    <p>Your file must have exactly 2 columns with the language pairs you want to practice.</p>
+                </div>
+
+                <h4>📊 File Structure</h4>
+                <table class="example-table">
+                    <thead>
+                        <tr>
+                            <th>Column 1 (First Language)</th>
+                            <th>Column 2 (Second Language)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>house</td>
+                            <td>casa</td>
+                        </tr>
+                        <tr>
+                            <td>car</td>
+                            <td>macchina</td>
+                        </tr>
+                        <tr>
+                            <td>book</td>
+                            <td>libro</td>
+                        </tr>
+                        <tr>
+                            <td>water</td>
+                            <td>acqua</td>
+                        </tr>
+                    </tbody>
                 </table>
-                <br>
-                <p><strong>Google Sheets:</strong><br>Make sure your sheet is public or shareable via link, then paste the URL.</p>
+
+                <div class="feature-highlight">
+                    <h5>🔄 Multiple Translations</h5>
+                    <p>You can provide alternative translations separated by: <strong>/ , \ ( )</strong></p>
+                </div>
+
+                <h4>✨ Advanced Examples</h4>
+                <table class="example-table">
+                    <thead>
+                        <tr>
+                            <th>English</th>
+                            <th>Italian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>house/home</td>
+                            <td>casa</td>
+                        </tr>
+                        <tr>
+                            <td>car, automobile</td>
+                            <td>macchina, auto</td>
+                        </tr>
+                        <tr>
+                            <td>beautiful</td>
+                            <td>bello/bella (belli/belle)</td>
+                        </tr>
+                        <tr>
+                            <td>to eat</td>
+                            <td>mangiare</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="feature-highlight">
+                    <h5>🔗 Google Sheets Setup</h5>
+                    <p>1. Create your sheet with the format above<br>
+                    2. Click "Share" → "Anyone with the link can view"<br>
+                    3. Copy the link and paste it in the input field<br>
+                    4. The system will automatically extract your data</p>
+                </div>
+
+                <div class="feature-highlight">
+                    <h5>⚠️ Important Notes</h5>
+                    <p>• Make sure language selections match your file columns<br>
+                    • First column = First Language, Second column = Second Language<br>
+                    • Headers are optional - the system reads all rows<br>
+                    • Empty rows will be automatically skipped</p>
+                </div>
+
+                <div class="feature-highlight">
+                    <h5>🎯 Pro Tips</h5>
+                    <p>• Include common phrases, not just individual words<br>
+                    • Add context in parentheses: "bank (financial)" vs "bank (river)"<br>
+                    • Use consistent formatting for better recognition<br>
+                    • Test with a small file first to ensure proper formatting</p>
+                </div>
             </div>
         </div>
+
+        
     </div>
 
     <div class="container">
@@ -595,55 +1208,100 @@
         <div id="menu-screen">
             <div class="header">
                 <h1 class="title" data-text="mainTitle">🎓 Language Learning Game</h1>
-                <p class="subtitle" data-text="subtitle">Learn languages in a fun and interactive way</p>
+                <p class="subtitle" data-text="subtitle">Master languages through interactive learning</p>
             </div>
 
             <!-- Language Selection Card -->
-            <div class="card">
-                <h3 style="color: white; margin-bottom: 20px; text-align: center;" data-text="languageSetup">🌐 Language Setup</h3>
+            <div class="card" style="z-index: 1000; position: relative;">
+                <h3 style="color: var(--text-primary); margin-bottom: 2rem; text-align: center; font-size: 1.5rem; font-weight: 700;" data-text="languageSetup">🌐 Language Configuration</h3>
                 <div class="language-settings">
-                    <div class="language-item">
-                        <label class="language-label" data-text="firstLanguage">First Language (Column 1):</label>
-                        <select id="first-language" class="select-control" onchange="updateLanguages()">
-                            <option value="italian">Italian</option>
-                            <option value="english">English</option>
-                            <option value="french">French</option>
-                            <option value="spanish">Spanish</option>
-                            <option value="german">German</option>
-                            <option value="other">Other</option>
-                        </select>
+                    <div class="custom-select">
+                        <label class="select-label" data-text="firstLanguage">First Language (Column 1):</label>
+                        <div class="select-button" onclick="toggleSelect('first-language')" id="first-language-btn">
+                            <span class="selected-text">🇺🇸 English</span>
+                            <span class="select-arrow">▼</span>
+                        </div>
+                        <div class="select-options" id="first-language-options">
+                            <div class="select-option" onclick="selectLanguage('first', 'english', '🇺🇸 English')">
+                                <span class="language-flag">🇺🇸</span>
+                                <span>English</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('first', 'italian', '🇮🇹 Italian')">
+                                <span class="language-flag">🇮🇹</span>
+                                <span>Italian</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('first', 'french', '🇫🇷 French')">
+                                <span class="language-flag">🇫🇷</span>
+                                <span>French</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('first', 'spanish', '🇪🇸 Spanish')">
+                                <span class="language-flag">🇪🇸</span>
+                                <span>Spanish</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('first', 'german', '🇩🇪 German')">
+                                <span class="language-flag">🇩🇪</span>
+                                <span>German</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('first', 'other', '🌍 Other')">
+                                <span class="language-flag">🌍</span>
+                                <span>Other Language</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="language-item">
-                        <label class="language-label" data-text="secondLanguage">Second Language (Column 2):</label>
-                        <select id="second-language" class="select-control" onchange="updateLanguages()">
-                            <option value="english">English</option>
-                            <option value="italian">Italian</option>
-                            <option value="french">French</option>
-                            <option value="spanish">Spanish</option>
-                            <option value="german">German</option>
-                            <option value="other">Other</option>
-                        </select>
+                    <div class="custom-select">
+                        <label class="select-label" data-text="secondLanguage">Second Language (Column 2):</label>
+                        <div class="select-button" onclick="toggleSelect('second-language')" id="second-language-btn">
+                            <span class="selected-text">🇮🇹 Italian</span>
+                            <span class="select-arrow">▼</span>
+                        </div>
+                        <div class="select-options" id="second-language-options">
+                            <div class="select-option" onclick="selectLanguage('second', 'english', '🇺🇸 English')">
+                                <span class="language-flag">🇺🇸</span>
+                                <span>English</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('second', 'italian', '🇮🇹 Italian')">
+                                <span class="language-flag">🇮🇹</span>
+                                <span>Italian</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('second', 'french', '🇫🇷 French')">
+                                <span class="language-flag">🇫🇷</span>
+                                <span>French</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('second', 'spanish', '🇪🇸 Spanish')">
+                                <span class="language-flag">🇪🇸</span>
+                                <span>Spanish</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('second', 'german', '🇩🇪 German')">
+                                <span class="language-flag">🇩🇪</span>
+                                <span>German</span>
+                            </div>
+                            <div class="select-option" onclick="selectLanguage('second', 'other', '🌍 Other')">
+                                <span class="language-flag">🌍</span>
+                                <span>Other Language</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <small style="color: rgba(255,255,255,0.7); text-align: center; display: block; margin-top: 10px;" data-text="languageHint">
-                    💡 Select the languages that match your file columns: First Language = Column 1, Second Language = Column 2
-                </small>
-                <div id="audio-status" class="status" style="font-size: 0.9rem; padding: 10px;">
-                    <span data-text="audioEnabled">Audio enabled for both languages</span>
+                <div class="hint-text" style="text-align: center; margin-top: 1rem;" data-text="languageHint">
+                    💡 Select languages matching your file structure: Column 1 → First Language, Column 2 → Second Language
+                </div>
+                <div id="audio-status" class="status" style="font-size: 0.95rem; margin-top: 1rem;">
+                    <span data-text="audioEnabled">🔊 Text-to-speech enabled for both languages</span>
                 </div>
             </div>
 
             <!-- File Loading Card -->
             <div class="card">
+                <h3 style="color: var(--text-primary); margin-bottom: 2rem; text-align: center; font-size: 1.5rem; font-weight: 700;">📂 Load Your Vocabulary</h3>
                 <div class="load-section">
                     <button class="btn btn-primary" onclick="loadExcelFile()">
-                        <span data-text="loadExcel">📁 Load Excel File</span>
+                        <span data-text="loadExcel">📄 Upload File</span>
                     </button>
                     <button class="btn btn-secondary" onclick="loadGoogleSheets()">
-                        <span data-text="loadSheets">🌐 Load Google Sheets</span>
+                        <span data-text="loadSheets">🌐 Google Sheets</span>
                     </button>
                     <button class="btn btn-info" onclick="showInfoModal()">
-                        <span data-text="fileInfo">ℹ️ File Format Info</span>
+                        <span data-text="fileInfo">📋 Format Guide</span>
                     </button>
                     <button class="btn btn-dark" onclick="downloadExample()">
                         <span data-text="downloadExample">📥 Download Example</span>
@@ -651,19 +1309,19 @@
                 </div>
 
                 <div class="url-input-section">
-                    <div class="input-group" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div class="input-group">
                         <input type="text" id="sheets-url" class="form-control" 
                                data-placeholder="sheetsPlaceholder"
                                placeholder="🔗 Paste your Google Sheets link here..." 
                                onkeypress="handleUrlKeyPress(event)">
                     </div>
-                    <small style="color: rgba(255,255,255,0.7);" data-text="sheetsHint">
-                        💡 For Google Sheets: share your sheet publicly and paste the link here
-                    </small>
+                    <div class="hint-text" data-text="sheetsHint">
+                        💡 Make your Google Sheet public and paste the shareable link above
+                    </div>
                 </div>
 
                 <div id="status" class="status" data-text="noDataLoaded">
-                    No data loaded
+                    📭 Ready to load your vocabulary data
                 </div>
 
                 <input type="file" id="file-input" accept=".xlsx,.xls,.csv" style="display: none;" onchange="handleFileUpload(event)">
@@ -671,21 +1329,30 @@
 
             <!-- Settings Card -->
             <div class="card">
-                <h3 style="color: white; margin-bottom: 20px; text-align: center;" data-text="settings">⚙️ Settings</h3>
+                <h3 style="color: var(--text-primary); margin-bottom: 2rem; text-align: center; font-size: 1.5rem; font-weight: 700;" data-text="settings">⚙️ Game Settings</h3>
                 <div class="settings-grid">
                     <div class="setting-item">
-                        <span class="setting-label" data-text="maxQuestions">Maximum questions:</span>
-                        <input type="number" id="max-questions" class="setting-input" value="50" min="10" max="500">
+                        <span class="setting-label" data-text="maxQuestions">Maximum questions per session:</span>
+                        <div class="number-input-group">
+                            <button class="number-btn" onclick="changeNumber('max-questions', -10)" title="Decrease by 10">−</button>
+                            <input type="number" id="max-questions" class="number-display" value="50" min="10" max="500" onchange="validateNumber('max-questions', 10, 500)">
+                            <button class="number-btn" onclick="changeNumber('max-questions', 10)" title="Increase by 10">+</button>
+                        </div>
                     </div>
                     <div class="setting-item">
-                        <span class="setting-label" data-text="maxPasses">Maximum passes:</span>
-                        <input type="number" id="max-passes" class="setting-input" value="3" min="0" max="20">
+                        <span class="setting-label" data-text="maxPasses">Maximum passes allowed:</span>
+                        <div class="number-input-group">
+                            <button class="number-btn" onclick="changeNumber('max-passes', -1)" title="Decrease by 1">−</button>
+                            <input type="number" id="max-passes" class="number-display" value="3" min="0" max="20" onchange="validateNumber('max-passes', 0, 20)">
+                            <button class="number-btn" onclick="changeNumber('max-passes', 1)" title="Increase by 1">+</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Game Modes Card -->
             <div class="card">
+                <h3 style="color: var(--text-primary); margin-bottom: 2rem; text-align: center; font-size: 1.5rem; font-weight: 700;">🎮 Choose Your Challenge</h3>
                 <div class="game-modes">
                     <button class="btn btn-danger mode-btn" id="first-second-btn" onclick="startGame('first_second')" disabled>
                         <span data-text="firstToSecond">🔤 First → Second Language</span>
@@ -700,7 +1367,7 @@
         <!-- Game Screen -->
         <div id="game-screen" class="game-screen">
             <div class="header">
-                <h1 class="title" style="font-size: 2rem;" data-text="gameTitle">🎯 Language Learning Game</h1>
+                <h1 class="title" style="font-size: 2.5rem;" data-text="gameTitle">🎯 Language Challenge</h1>
             </div>
 
             <div class="card">
@@ -712,7 +1379,7 @@
                         </div>
                         <div class="score-item">
                             <span id="question-progress" class="score-value">0/50</span>
-                            <span class="score-label" data-text="questions">Questions</span>
+                            <span class="score-label" data-text="questions">Progress</span>
                         </div>
                         <div class="score-item">
                             <span id="passes-left" class="score-value">3</span>
@@ -735,12 +1402,12 @@
                 </button>
 
                 <div id="solution-container" class="solution-container">
-                    <div class="solution-text" data-text="solution">Solution:</div>
+                    <div class="solution-text" data-text="solution">✨ Solution:</div>
                     <div id="solution-word" class="solution-word"></div>
                 </div>
 
                 <div class="answer-section">
-                    <label class="answer-label" data-text="yourAnswer">Your answer:</label>
+                    <label class="answer-label" data-text="yourAnswer">Your translation:</label>
                     <input type="text" id="answer-input" class="answer-input" 
                            data-placeholder="answerPlaceholder"
                            placeholder="Type your translation here..." 
@@ -751,24 +1418,46 @@
 
                 <div class="game-controls">
                     <button id="check-btn" class="btn btn-primary" onclick="checkAnswer()">
-                        <span data-text="confirm">✓ Confirm</span>
+                        <span data-text="confirm">✓ Check Answer</span>
                     </button>
                     <button id="solution-btn" class="btn btn-info" onclick="toggleSolution()">
                         <span data-text="showSolution">👁️ Show Solution</span>
                     </button>
                     <button id="pass-btn" class="btn btn-warning" onclick="passQuestion()">
-                        <span data-text="pass">⏭️ Pass</span>
+                        <span data-text="pass">⏭️ Skip Question</span>
                     </button>
                     <button id="next-btn" class="btn btn-secondary" onclick="nextQuestion()" style="display: none;">
-                        <span data-text="next">➡️ Next</span>
+                        <span data-text="next">➡️ Continue</span>
                     </button>
                     <button class="btn btn-danger" onclick="endGame()">
-                        <span data-text="endGame">🏁 End Game</span>
+                        <span data-text="endGame">🏁 End Session</span>
                     </button>
                     <button class="btn btn-dark" onclick="returnToMenu()">
-                        <span data-text="menu">🏠 Menu</span>
+                        <span data-text="menu">🏠 Main Menu</span>
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="results-screen" class="results-screen">
+        <div class="header">
+            <h1 class="title" style="font-size: 2.5rem;">🎯 Session Complete!</h1>
+        </div>
+
+        <div class="card" style="text-align: center; padding: 3rem 2rem;">
+            <div id="results-content">
+                <!-- Results will be populated by JavaScript -->
+            </div>
+            
+            <div style="margin-top: 3rem;">
+                <button class="btn btn-primary" onclick="startNewSession()" style="margin-right: 1rem;">
+                    <span>🔄 New Session</span>
+                </button>
+                <button class="btn btn-dark" onclick="returnToMenu()">
+                    <span>🏠 Main Menu</span>
+                </button>
             </div>
         </div>
     </div>
@@ -777,6 +1466,10 @@
         // Global variables
         const API_BASE_URL = 'http://localhost:5000/api';
         let currentUILanguage = 'en';
+        let selectedLanguages = {
+            first: 'english',
+            second: 'italian'
+        };
         let gameState = {
             solutionVisible: false,
             audioEnabled: true,
@@ -787,121 +1480,159 @@
         const translations = {
             en: {
                 mainTitle: "🎓 Language Learning Game",
-                subtitle: "Learn languages in a fun and interactive way",
-                languageSetup: "🌐 Language Setup",
+                subtitle: "Master languages through interactive learning",
+                languageSetup: "🌐 Language Configuration",
                 firstLanguage: "First Language (Column 1):",
                 secondLanguage: "Second Language (Column 2):",
-                languageHint: "💡 Select the languages that match your file columns: First Language = Column 1, Second Language = Column 2",
-                audioEnabled: "Audio enabled for both languages",
-                audioDisabled: "Audio disabled (Other language selected)",
-                loadExcel: "📁 Load Excel File",
-                loadSheets: "🌐 Load Google Sheets", 
-                fileInfo: "ℹ️ File Format Info",
+                languageHint: "💡 Select languages matching your file structure: Column 1 → First Language, Column 2 → Second Language",
+                audioEnabled: "🔊 Text-to-speech enabled for both languages",
+                audioDisabled: "🔇 Audio disabled (Other language selected)",
+                loadExcel: "📄 Upload File",
+                loadSheets: "🌐 Google Sheets", 
+                fileInfo: "📋 Format Guide",
                 downloadExample: "📥 Download Example",
                 sheetsPlaceholder: "🔗 Paste your Google Sheets link here...",
-                sheetsHint: "💡 For Google Sheets: share your sheet publicly and paste the link here",
-                noDataLoaded: "No data loaded",
-                settings: "⚙️ Settings",
-                maxQuestions: "Maximum questions:",
-                maxPasses: "Maximum passes:",
+                sheetsHint: "💡 Make your Google Sheet public and paste the shareable link above",
+                noDataLoaded: "📭 Ready to load your vocabulary data",
+                settings: "⚙️ Game Settings",
+                maxQuestions: "Maximum questions per session:",
+                maxPasses: "Maximum passes allowed:",
                 firstToSecond: "🔤 First → Second Language",
                 secondToFirst: "🔤 Second → First Language",
-                gameTitle: "🎯 Language Learning Game",
+                gameTitle: "🎯 Language Challenge",
                 score: "Score",
-                questions: "Questions", 
+                questions: "Progress", 
                 passesLeft: "Passes left",
                 translateTo: "Translate to second language:",
                 translateToFirst: "Translate to first language:",
-                solution: "Solution:",
-                yourAnswer: "Your answer:",
+                solution: "✨ Solution:",
+                yourAnswer: "Your translation:",
                 answerPlaceholder: "Type your translation here...",
-                confirm: "✓ Confirm",
+                confirm: "✓ Check Answer",
                 showSolution: "👁️ Show Solution",
                 hideSolution: "🙈 Hide Solution", 
-                pass: "⏭️ Pass",
-                next: "➡️ Next",
-                endGame: "🏁 End Game",
-                menu: "🏠 Menu",
-                fileFormatTitle: "File Format Information",
-                fileFormatContent: `<p><strong>Required Format:</strong></p>
-                    <ul>
-                        <li>Excel file (.xlsx, .xls) or CSV file (.csv)</li>
-                        <li><strong>Column 1:</strong> First Language words/phrases</li>
-                        <li><strong>Column 2:</strong> Second Language words/phrases</li>
-                        <li>Multiple variants can be separated by: / , \\ ( )</li>
-                    </ul>
-                    <br>
-                    <p><strong>Example:</strong></p>
-                    <table border="1" style="width:100%; border-collapse: collapse;">
-                        <tr><th>Column 1 (First Language)</th><th>Column 2 (Second Language)</th></tr>
-                        <tr><td>house/home</td><td>casa</td></tr>
-                        <tr><td>car, automobile</td><td>macchina, auto</td></tr>
-                        <tr><td>book</td><td>libro</td></tr>
-                    </table>
-                    <br>
-                    <p><strong>Important:</strong> Make sure to select the correct languages in the dropdown that match your file columns!</p>
-                    <br>
-                    <p><strong>Google Sheets:</strong><br>Make sure your sheet is public or shareable via link, then paste the URL.</p>`
+                pass: "⏭️ Skip Question",
+                next: "➡️ Continue",
+                endGame: "🏁 End Session",
+                menu: "🏠 Main Menu",
+                fileFormatTitle: "📋 File Format Requirements",
             },
             it: {
                 mainTitle: "🎓 Gioco di Apprendimento Linguistico",
-                subtitle: "Impara le lingue in modo divertente e interattivo",
+                subtitle: "Impara le lingue attraverso l'apprendimento interattivo",
                 languageSetup: "🌐 Configurazione Lingue",
                 firstLanguage: "Prima Lingua (Colonna 1):",
                 secondLanguage: "Seconda Lingua (Colonna 2):",
-                languageHint: "💡 Seleziona le lingue che corrispondono alle colonne del tuo file: Prima Lingua = Colonna 1, Seconda Lingua = Colonna 2",
-                audioEnabled: "Audio abilitato per entrambe le lingue",
-                audioDisabled: "Audio disabilitato (Altra lingua selezionata)",
-                loadExcel: "📁 Carica File Excel",
-                loadSheets: "🌐 Carica Google Sheets",
-                fileInfo: "ℹ️ Info Formato File",
+                languageHint: "💡 Seleziona le lingue che corrispondono alla struttura del file: Colonna 1 → Prima Lingua, Colonna 2 → Seconda Lingua",
+                audioEnabled: "🔊 Sintesi vocale abilitata per entrambe le lingue",
+                audioDisabled: "🔇 Audio disabilitato (Altra lingua selezionata)",
+                loadExcel: "📄 Carica File",
+                loadSheets: "🌐 Google Sheets",
+                fileInfo: "📋 Guida Formato",
                 downloadExample: "📥 Scarica Esempio",
                 sheetsPlaceholder: "🔗 Incolla qui il link del Google Sheets...",
-                sheetsHint: "💡 Per Google Sheets: condividi il foglio pubblicamente e incolla qui il link",
-                noDataLoaded: "Nessun dato caricato",
-                settings: "⚙️ Impostazioni",
-                maxQuestions: "Domande massime:",
-                maxPasses: "Passi massimi:",
+                sheetsHint: "💡 Rendi pubblico il tuo Google Sheet e incolla il link condivisibile sopra",
+                noDataLoaded: "📭 Pronto per caricare i tuoi dati del vocabolario",
+                settings: "⚙️ Impostazioni Gioco",
+                maxQuestions: "Domande massime per sessione:",
+                maxPasses: "Salti massimi consentiti:",
                 firstToSecond: "🔤 Prima → Seconda Lingua",
                 secondToFirst: "🔤 Seconda → Prima Lingua",
-                gameTitle: "🎯 Gioco di Apprendimento Linguistico",
+                gameTitle: "🎯 Sfida Linguistica",
                 score: "Punteggio",
-                questions: "Domande",
-                passesLeft: "Passi rimasti",
+                questions: "Progresso",
+                passesLeft: "Salti rimasti",
                 translateTo: "Traduci nella seconda lingua:",
                 translateToFirst: "Traduci nella prima lingua:",
-                solution: "Soluzione:",
-                yourAnswer: "La tua risposta:",
+                solution: "✨ Soluzione:",
+                yourAnswer: "La tua traduzione:",
                 answerPlaceholder: "Scrivi qui la traduzione...",
-                confirm: "✓ Conferma",
+                confirm: "✓ Controlla Risposta",
                 showSolution: "👁️ Mostra Soluzione",
                 hideSolution: "🙈 Nascondi Soluzione",
-                pass: "⏭️ Passa",
-                next: "➡️ Prossima",
-                endGame: "🏁 Termina",
-                menu: "🏠 Menu",
-                fileFormatTitle: "Informazioni Formato File",
-                fileFormatContent: `<p><strong>Formato Richiesto:</strong></p>
-                    <ul>
-                        <li>File Excel (.xlsx, .xls) o file CSV (.csv)</li>
-                        <li><strong>Colonna 1:</strong> parole/frasi Prima Lingua</li>
-                        <li><strong>Colonna 2:</strong> parole/frasi Seconda Lingua</li>
-                        <li>Varianti multiple possono essere separate da: / , \\ ( )</li>
-                    </ul>
-                    <br>
-                    <p><strong>Esempio:</strong></p>
-                    <table border="1" style="width:100%; border-collapse: collapse;">
-                        <tr><th>Colonna 1 (Prima Lingua)</th><th>Colonna 2 (Seconda Lingua)</th></tr>
-                        <tr><td>house/home</td><td>casa</td></tr>
-                        <tr><td>car, automobile</td><td>macchina, auto</td></tr>
-                        <tr><td>book</td><td>libro</td></tr>
-                    </table>
-                    <br>
-                    <p><strong>Importante:</strong> Assicurati di selezionare le lingue corrette nel menu a tendina che corrispondono alle colonne del tuo file!</p>
-                    <br>
-                    <p><strong>Google Sheets:</strong><br>Assicurati che il foglio sia pubblico o condivisibile tramite link, poi incolla l'URL.</p>`
+                pass: "⏭️ Salta Domanda",
+                next: "➡️ Continua",
+                endGame: "🏁 Termina Sessione",
+                menu: "🏠 Menu Principale",
+                fileFormatTitle: "📋 Requisiti Formato File",
             }
         };
+
+        // Custom Select functionality
+        function toggleSelect(selectId) {
+            const options = document.getElementById(selectId + '-options');
+            const button = document.getElementById(selectId + '-btn');
+            const isOpen = options.classList.contains('open');
+            
+            // Close all other selects
+            document.querySelectorAll('.select-options').forEach(opt => {
+                opt.classList.remove('open');
+            });
+            document.querySelectorAll('.select-button').forEach(btn => {
+                btn.classList.remove('open');
+            });
+            
+            if (!isOpen) {
+                options.classList.add('open');
+                button.classList.add('open');
+                updateSelectOptions();
+            }
+        }
+
+        function selectLanguage(type, value, display) {
+            const button = document.getElementById(type + '-language-btn');
+            const selectedText = button.querySelector('.selected-text');
+            
+            selectedLanguages[type] = value;
+            selectedText.textContent = display;
+            
+            // Close the dropdown
+            toggleSelect(type + '-language');
+            
+            // Update the other select to disable the same language
+            updateSelectOptions();
+            updateLanguages();
+        }
+
+        function updateSelectOptions() {
+            const firstOptions = document.getElementById('first-language-options');
+            const secondOptions = document.getElementById('second-language-options');
+            
+            // Reset all options
+            firstOptions.querySelectorAll('.select-option').forEach(opt => {
+                opt.classList.remove('disabled');
+            });
+            secondOptions.querySelectorAll('.select-option').forEach(opt => {
+                opt.classList.remove('disabled');
+            });
+            
+            // Disable selected language in the other dropdown
+            if (selectedLanguages.first !== 'other') {
+                const optionToDisable = secondOptions.querySelector(`[onclick*="${selectedLanguages.first}"]`);
+                if (optionToDisable) {
+                    optionToDisable.classList.add('disabled');
+                }
+            }
+            
+            if (selectedLanguages.second !== 'other') {
+                const optionToDisable = firstOptions.querySelector(`[onclick*="${selectedLanguages.second}"]`);
+                if (optionToDisable) {
+                    optionToDisable.classList.add('disabled');
+                }
+            }
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.custom-select')) {
+                document.querySelectorAll('.select-options').forEach(opt => {
+                    opt.classList.remove('open');
+                });
+                document.querySelectorAll('.select-button').forEach(btn => {
+                    btn.classList.remove('open');
+                });
+            }
+        });
 
         // UI Language functions
         function setUILanguage(lang) {
@@ -934,21 +1665,40 @@
                     element.placeholder = translations[lang][key];
                 }
             });
+
+            // Update modal content language
+            updateModalLanguage(lang);
+        }
+
+        function updateModalLanguage(lang) {
+            const enContent = document.getElementById('modal-content-en');
+            const itContent = document.getElementById('modal-content-it');
+            
+            // Check if elements exist before manipulating them
+            if (!enContent || !itContent) {
+                console.warn('Modal content elements not found');
+                return;
+            }
+            
+            if (lang === 'en') {
+                enContent.classList.remove('hidden');
+                itContent.classList.add('hidden');
+            } else {
+                enContent.classList.add('hidden');
+                itContent.classList.remove('hidden');
+            }
         }
 
         // Language setup functions
         function updateLanguages() {
-            const firstLang = document.getElementById('first-language').value;
-            const secondLang = document.getElementById('second-language').value;
-            
             fetch(`${API_BASE_URL}/set_languages`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                    first_language: firstLang,
-                    second_language: secondLang
+                    first_language: selectedLanguages.first,
+                    second_language: selectedLanguages.second
                 })
             })
             .then(response => response.json())
@@ -1017,7 +1767,7 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            updateStatus('🔄 Loading...', 'loading');
+            updateStatus('🔄 Processing your file...', 'loading');
 
             const formData = new FormData();
             formData.append('file', file);
@@ -1029,16 +1779,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    updateStatus(data.message, 'success');
+                    updateStatus('✅ ' + data.message, 'success');
                     enableGameButtons();
                 } else {
-                    updateStatus(data.message, 'error');
+                    updateStatus('❌ ' + data.message, 'error');
                     alert('Error: ' + data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                updateStatus('❌ Loading error', 'error');
+                updateStatus('❌ Connection error occurred', 'error');
                 alert('Server connection error');
             });
         }
@@ -1062,16 +1812,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    updateStatus(data.message, 'success');
+                    updateStatus('✅ ' + data.message, 'success');
                     enableGameButtons();
                 } else {
-                    updateStatus(data.message, 'error');
+                    updateStatus('❌ ' + data.message, 'error');
                     alert('Error: ' + data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                updateStatus('❌ Connection error', 'error');
+                updateStatus('❌ Connection error occurred', 'error');
                 alert('Server connection error');
             });
         }
@@ -1348,23 +2098,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    let message = `🏁 GAME ENDED!\n\n`;
-                    message += `📊 Results:\n`;
-                    message += `• Questions answered: ${data.questions_asked}\n`;
-                    message += `• Final score: ${data.final_score}\n`;
-                    message += `• Percentage: ${data.percentage}%\n\n`;
-                    
-                    if (data.percentage >= 70) message += '🎉 Excellent work!';
-                    else if (data.percentage >= 50) message += '💪 Keep it up!';
-                    else message += '📚 More practice needed!';
-                    
-                    alert(message);
-                    returnToMenu();
+                    showResultsScreen(data);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Server connection error');
             });
         }
 
@@ -1377,10 +2115,120 @@
             gameState.waitingForNext = false;
         }
 
-        // Initialize the app
+        // Number input controls
+        function changeNumber(inputId, change) {
+            const input = document.getElementById(inputId);
+            const currentValue = parseInt(input.value) || 0;
+            const minValue = parseInt(input.min) || 0;
+            const maxValue = parseInt(input.max) || 999;
+            
+            const newValue = Math.min(Math.max(currentValue + change, minValue), maxValue);
+            input.value = newValue;
+            
+            // Update button states
+            updateNumberButtons(inputId);
+        }
+
+        function validateNumber(inputId, min, max) {
+            const input = document.getElementById(inputId);
+            let value = parseInt(input.value) || min;
+            
+            if (value < min) value = min;
+            if (value > max) value = max;
+            
+            input.value = value;
+            updateNumberButtons(inputId);
+        }
+
+        function updateNumberButtons(inputId) {
+            const input = document.getElementById(inputId);
+            const value = parseInt(input.value) || 0;
+            const minValue = parseInt(input.min) || 0;
+            const maxValue = parseInt(input.max) || 999;
+            
+            const container = input.parentElement;
+            const decreaseBtn = container.querySelector('.number-btn:first-child');
+            const increaseBtn = container.querySelector('.number-btn:last-child');
+            
+            decreaseBtn.disabled = value <= minValue;
+            increaseBtn.disabled = value >= maxValue;
+        }
+
+        function showResultsScreen(data) {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('results-screen').style.display = 'block';
+            
+            const resultsContent = document.getElementById('results-content');
+            
+            // Calculate performance metrics
+            const percentage = data.percentage;
+            let performanceIcon, performanceText, performanceColor;
+            
+            if (percentage >= 90) {
+                performanceIcon = '🏆';
+                performanceText = 'Outstanding Performance!';
+                performanceColor = '#10b981';
+            } else if (percentage >= 70) {
+                performanceIcon = '🎉';
+                performanceText = 'Excellent Work!';
+                performanceColor = '#6366f1';
+            } else if (percentage >= 50) {
+                performanceIcon = '💪';
+                performanceText = 'Good Job, Keep Practicing!';
+                performanceColor = '#f59e0b';
+            } else {
+                performanceIcon = '📚';
+                performanceText = 'Keep Studying - You\'ll Improve!';
+                performanceColor = '#ef4444';
+            }
+            
+            resultsContent.innerHTML = `
+                <div style="margin-bottom: 2rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">${performanceIcon}</div>
+                    <h2 style="font-size: 2rem; font-weight: 700; color: ${performanceColor}; margin-bottom: 0.5rem;">
+                        ${performanceText}
+                    </h2>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                    <div class="stat-card">
+                        <div class="stat-value">${data.questions_asked}</div>
+                        <div class="stat-label">Questions Answered</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.final_score}</div>
+                        <div class="stat-label">Final Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: ${performanceColor};">${percentage}%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--surface); padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-border); margin-top: 2rem;">
+                    <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.25rem;">Session Summary</h3>
+                    <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem;">
+                        You completed ${data.questions_asked} questions with a success rate of ${percentage}%.
+                        ${percentage >= 70 ? 'Great job! You\'re making excellent progress.' : 
+                          percentage >= 50 ? 'Good work! Keep practicing to improve your accuracy.' :
+                          'Don\'t give up! Regular practice will help you improve.'}
+                    </p>
+                    ${percentage < 70 ? 
+                        '<p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">💡 Tip: Try reviewing the material before your next session for better results.</p>' : 
+                        '<p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">🎯 You\'re doing great! Challenge yourself with more questions in your next session.</p>'
+                    }
+                </div>
+            `;
+        }
+
+        function startNewSession() {
+            document.getElementById('results-screen').style.display = 'none';
+            document.getElementById('menu-screen').style.display = 'block';
+        }
         document.addEventListener('DOMContentLoaded', function() {
             setUILanguage('en');
             updateLanguages();
+            updateSelectOptions();
             
             // Close modal when clicking outside
             document.getElementById('info-modal').addEventListener('click', function(e) {
