@@ -1183,9 +1183,31 @@
 <body>
     <!-- Language Selector -->
     <div class="language-selector">
-        <button class="lang-btn active" onclick="setUILanguage('en')" data-lang="en">EN</button>
-        <button class="lang-btn" onclick="setUILanguage('it')" data-lang="it">IT</button>
+        <button class="lang-btn active" onclick="setUILanguage('en')" data-lang="en">
+            <!-- UK Flag -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="20" viewBox="0 0 60 30">
+                <clipPath id="t">
+                    <path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/>
+                </clipPath>
+                <path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+                <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+                <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="4" clip-path="url(#t)"/>
+                <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+                <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
+            </svg>
+        </button>
+
+        <button class="lang-btn" onclick="setUILanguage('it')" data-lang="it">
+            <!-- Italy Flag -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="20" viewBox="0 0 3 2">
+                <rect width="1" height="2" x="0" fill="#008C45"/>
+                <rect width="1" height="2" x="1" fill="#F4F5F0"/>
+                <rect width="1" height="2" x="2" fill="#CD212A"/>
+            </svg>
+        </button>
     </div>
+
+
 
     <!-- Info Modal -->
     <div id="info-modal" class="info-modal">
@@ -1282,6 +1304,69 @@
                     • Empty rows will be automatically skipped</p>
                 </div>
             </div>
+
+            <div id="modal-content-it" class="modal-language-content hidden">
+                <h4>📁 Tipi di File Supportati</h4>
+                <ul>
+                    <li><strong>File Excel:</strong> formati .xlsx, .xls</li>
+                    <li><strong>File CSV:</strong> formato .csv con codifica UTF-8</li>
+                    <li><strong>Google Sheets:</strong> Pubblici o condivisi tramite link</li>
+                </ul>
+
+                <div class="feature-highlight">
+                    <h5>🏗️ Struttura Richiesta</h5>
+                    <p>Il tuo file deve avere esattamente 2 colonne con le coppie di lingue che vuoi praticare.</p>
+                </div>
+
+                <h4>📊 Struttura del File</h4>
+                <table class="example-table">
+                    <thead>
+                        <tr>
+                            <th>Colonna 1 (Prima Lingua)</th>
+                            <th>Colonna 2 (Seconda Lingua)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>house</td><td>casa</td></tr>
+                        <tr><td>car</td><td>macchina</td></tr>
+                        <tr><td>book</td><td>libro</td></tr>
+                        <tr><td>water</td><td>acqua</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="feature-highlight">
+                    <h5>🔄 Traduzioni Multiple</h5>
+                    <p>Puoi fornire traduzioni alternative separate da: <strong>/ , \ ( )</strong></p>
+                </div>
+
+                <h4>✨ Esempi Avanzati</h4>
+                <table class="example-table">
+                    <thead>
+                        <tr><th>Inglese</th><th>Italiano</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>house/home</td><td>casa</td></tr>
+                        <tr><td>car, automobile</td><td>macchina, auto</td></tr>
+                        <tr><td>beautiful</td><td>bello/bella (belli/belle)</td></tr>
+                        <tr><td>to eat</td><td>mangiare</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="feature-highlight">
+                    <h5>🔗 Configurazione Google Sheets</h5>
+                    <p>1. Crea il tuo foglio con il formato sopra<br>
+                    2. Clicca "Condividi" → "Chiunque abbia il link può visualizzare"<br>
+                    3. Copia il link e incollalo nel campo di input<br>
+                    4. Il sistema estrarrà automaticamente i tuoi dati</p>
+                </div>
+
+                <div class="feature-highlight">
+                    <h5>⚠️ Note Importanti</h5>
+                    <p>• Assicurati che le selezioni linguistiche corrispondano alle colonne del file<br>
+                    • Prima colonna = Prima Lingua, Seconda colonna = Seconda Lingua<br>
+                    • Le righe vuote verranno automaticamente ignorate</p>
+                </div>
+            </div>
         </div>
 
         
@@ -1308,27 +1393,27 @@
                         <div class="select-options" id="first-language-options">
                             <div class="select-option" onclick="selectLanguage('first', 'english', '🇺🇸 English')">
                                 <span class="language-flag">🇺🇸</span>
-                                <span>English</span>
+                                <span data-text="english">English</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('first', 'italian', '🇮🇹 Italian')">
                                 <span class="language-flag">🇮🇹</span>
-                                <span>Italian</span>
+                                <span data-text="italian">Italian</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('first', 'french', '🇫🇷 French')">
                                 <span class="language-flag">🇫🇷</span>
-                                <span>French</span>
+                                <span data-text="french">French</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('first', 'spanish', '🇪🇸 Spanish')">
                                 <span class="language-flag">🇪🇸</span>
-                                <span>Spanish</span>
+                                <span data-text="spanish">Spanish</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('first', 'german', '🇩🇪 German')">
                                 <span class="language-flag">🇩🇪</span>
-                                <span>German</span>
+                                <span data-text="german">German</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('first', 'other', '🌍 Other')">
                                 <span class="language-flag">🌍</span>
-                                <span>Other Language</span>
+                                <span data-text="other">Other Language</span>
                             </div>
                         </div>
                     </div>
@@ -1341,27 +1426,27 @@
                         <div class="select-options" id="second-language-options">
                             <div class="select-option" onclick="selectLanguage('second', 'english', '🇺🇸 English')">
                                 <span class="language-flag">🇺🇸</span>
-                                <span>English</span>
+                                <span data-text="english">English</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('second', 'italian', '🇮🇹 Italian')">
                                 <span class="language-flag">🇮🇹</span>
-                                <span>Italian</span>
+                                <span data-text="italian">Italian</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('second', 'french', '🇫🇷 French')">
                                 <span class="language-flag">🇫🇷</span>
-                                <span>French</span>
+                                <span data-text="french">French</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('second', 'spanish', '🇪🇸 Spanish')">
                                 <span class="language-flag">🇪🇸</span>
-                                <span>Spanish</span>
+                                <span data-text="spanish">Spanish</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('second', 'german', '🇩🇪 German')">
                                 <span class="language-flag">🇩🇪</span>
-                                <span>German</span>
+                                <span data-text="german">German</span>
                             </div>
                             <div class="select-option" onclick="selectLanguage('second', 'other', '🌍 Other')">
                                 <span class="language-flag">🌍</span>
-                                <span>Other Language</span>
+                                <span data-text="other">Other Language</span>
                             </div>
                         </div>
                     </div>
@@ -1376,7 +1461,7 @@
 
             <!-- File Loading Card -->
             <div class="card">
-                <h3 style="color: var(--text-primary); margin-bottom: 2rem; text-align: center; font-size: 1.5rem; font-weight: 700;">📂 Load Your Vocabulary</h3>
+                <h3 style="color: var(--text-primary); margin-bottom: 2rem; text-align: center; font-size: 1.5rem; font-weight: 700;"data-text="loadYourVocabulary">📂 Load Your Vocabulary</h3>
                 <div class="load-section">
                     <button class="btn btn-primary" onclick="loadExcelFile()">
                         <span data-text="loadExcel">📄 Upload File</span>
@@ -1436,7 +1521,7 @@
 
             <!-- Game Modes Card -->
             <div class="card">
-                <h3 style="color: var(--text-primary); margin-bottom: 2rem; text-align: center; font-size: 1.5rem; font-weight: 700;">🎮 Choose Your Challenge</h3>
+                <h3 style="color: var(--text-primary); margin-bottom: 2rem; text-align: center; font-size: 1.5rem; font-weight: 700;" data-text="chooseChallenge">🎮 Choose Your Challenge</h3>
                 <div class="game-modes">
                     <button class="btn btn-danger mode-btn" id="first-second-btn" onclick="startGame('first_second')" disabled>
                         <span data-text="firstToSecond">🔤 First → Second Language</span>
@@ -1527,7 +1612,7 @@
     <!-- Results Screen -->
     <div id="results-screen" class="results-screen">
         <div class="header">
-            <h1 class="title" style="font-size: 2.5rem;">🎯 Session Complete!</h1>
+            <h1 class="title" style="font-size: 2.5rem;" data-text="sessionComplete">🎯 Session Complete!</h1>
         </div>
 
         <div class="card" style="text-align: center; padding: 3rem 2rem;">
@@ -1535,14 +1620,14 @@
                 <!-- Results will be populated by JavaScript -->
             </div>
             
-            <div style="margin-top: 3rem;">
+           <div style="margin-top: 3rem;">
                 <button class="btn btn-primary" onclick="startNewSession()" style="margin-right: 1rem;">
-                    <span>🔄 New Session</span>
+                    <span data-text="newSession">🔄 New Session</span>
                 </button>
                 <button class="btn btn-dark" onclick="returnToMenu()">
-                    <span>🏠 Main Menu</span>
+                    <span data-text="menu">🏠 Main Menu</span>
                 </button>
-            </div>
+            </div> 
         </div>
     </div>
 
@@ -1565,7 +1650,7 @@
         // Translations
         const translations = {
             en: {
-                mainTitle: "🎓 Language Learning Game",
+                mainTitle: "🤷 IDK how to say",
                 subtitle: "Master languages through interactive learning",
                 languageSetup: "🌐 Language Configuration",
                 firstLanguage: "First Language (Column 1):",
@@ -1574,7 +1659,8 @@
                 audioEnabled: "🔊 Text-to-speech enabled for both languages",
                 audioDisabled: "🔇 Audio disabled (Other language selected)",
                 loadExcel: "📄 Upload File",
-                loadSheets: "🌐 Google Sheets", 
+                loadSheets: "🌐 Google Sheets",
+                loadYourVocabulary: "📂 Load Your Vocabulary",
                 fileInfo: "📋 Format Guide",
                 downloadExample: "📥 Download Example",
                 sheetsPlaceholder: "🔗 Paste your Google Sheets link here...",
@@ -1585,7 +1671,7 @@
                 maxPasses: "Maximum passes allowed:",
                 firstToSecond: "🔤 First → Second Language",
                 secondToFirst: "🔤 Second → First Language",
-                gameTitle: "🎯 Language Challenge",
+                gameTitle: "🤷 IDK how to say",
                 score: "Score",
                 questions: "Progress", 
                 passesLeft: "Passes left",
@@ -1602,10 +1688,36 @@
                 endGame: "🏁 End Session",
                 menu: "🏠 Main Menu",
                 fileFormatTitle: "📋 File Format Requirements",
+                chooseChallenge: "🎮 Choose Your Challenge",
+                english: "English",
+                italian: "Italian", 
+                french: "French",
+                spanish: "Spanish",
+                german: "German",
+                other: "Other Language",
+                sessionComplete: "🎯 Session Complete!",
+                outstandingPerformance: "Outstanding Performance!",
+                excellentWork: "Excellent Work!",
+                goodJobKeepPracticing: "Good Job, Keep Practicing!",
+                keepStudying: "Keep Studying - You'll Improve!",
+                questionsAnswered: "Questions Answered",
+                finalScore: "Final Score",
+                successRate: "Success Rate",
+                sessionSummary: "Session Summary",
+                newSession: "🔄 New Session",
+                completedQuestions: "You completed {0} questions with a success rate of {1}%.",
+                greatProgress: "Great job! You're making excellent progress.",
+                goodProgress: "Good work! Keep practicing to improve your accuracy.",
+                keepTrying: "Don't give up! Regular practice will help you improve.",
+                tipReview: "💡 Tip: Try reviewing the material before your next session for better results.",
+                tipChallenge: "🎯 You're doing great! Challenge yourself with more questions in your next session.",
+                audioUsage: "Audio Usage",
+                characters: "characters",
+                requests: "requests"
             },
             it: {
-                mainTitle: "🎓 Gioco di Apprendimento Linguistico",
-                subtitle: "Impara le lingue attraverso l'apprendimento interattivo",
+                mainTitle: "🤷 IDK how to say",
+                subtitle: "Padroneggia le lingue attraverso l'apprendimento interattivo",
                 languageSetup: "🌐 Configurazione Lingue",
                 firstLanguage: "Prima Lingua (Colonna 1):",
                 secondLanguage: "Seconda Lingua (Colonna 2):",
@@ -1614,6 +1726,7 @@
                 audioDisabled: "🔇 Audio disabilitato (Altra lingua selezionata)",
                 loadExcel: "📄 Carica File",
                 loadSheets: "🌐 Google Sheets",
+                loadYourVocabulary: "📂 Carica il tuo vocabolario",
                 fileInfo: "📋 Guida Formato",
                 downloadExample: "📥 Scarica Esempio",
                 sheetsPlaceholder: "🔗 Incolla qui il link del Google Sheets...",
@@ -1624,10 +1737,10 @@
                 maxPasses: "Salti massimi consentiti:",
                 firstToSecond: "🔤 Prima → Seconda Lingua",
                 secondToFirst: "🔤 Seconda → Prima Lingua",
-                gameTitle: "🎯 Sfida Linguistica",
+                gameTitle: "🤷 IDK how to say",
                 score: "Punteggio",
                 questions: "Progresso",
-                passesLeft: "Salti rimasti",
+                passesLeft: "Skip rimasti",
                 translateTo: "Traduci nella seconda lingua:",
                 translateToFirst: "Traduci nella prima lingua:",
                 solution: "✨ Soluzione:",
@@ -1641,6 +1754,32 @@
                 endGame: "🏁 Termina Sessione",
                 menu: "🏠 Menu Principale",
                 fileFormatTitle: "📋 Requisiti Formato File",
+                chooseChallenge: "🎮 Scegli la Tua Sfida",
+                english: "Inglese",
+                italian: "Italiano",
+                french: "Francese", 
+                spanish: "Spagnolo",
+                german: "Tedesco",
+                other: "Altra Lingua",
+                sessionComplete: "🎯 Sessione Completata!",
+                outstandingPerformance: "Prestazione Eccezionale!",
+                excellentWork: "Ottimo Lavoro!",
+                goodJobKeepPracticing: "Buon Lavoro, Continua a Praticare!",
+                keepStudying: "Continua a Studiare - Migliorerai!",
+                questionsAnswered: "Domande Risposte",
+                finalScore: "Punteggio Finale", 
+                successRate: "Percentuale di Successo",
+                sessionSummary: "Riassunto Sessione",
+                newSession: "🔄 Nuova Sessione",
+                completedQuestions: "Hai completato {0} domande con una percentuale di successo del {1}%.",
+                greatProgress: "Ottimo lavoro! Stai facendo progressi eccellenti.",
+                goodProgress: "Buon lavoro! Continua a praticare per migliorare la precisione.",
+                keepTrying: "Non arrenderti! La pratica regolare ti aiuterà a migliorare.",
+                tipReview: "💡 Suggerimento: Prova a rivedere il materiale prima della prossima sessione per risultati migliori.",
+                tipChallenge: "🎯 Stai andando benissimo! Sfidati con più domande nella prossima sessione.",
+                audioUsage: "Utilizzo Audio",
+                characters: "caratteri",
+                requests: "richieste"
             }
         };
 
@@ -1670,7 +1809,11 @@
             const selectedText = button.querySelector('.selected-text');
             
             selectedLanguages[type] = value;
-            selectedText.textContent = display;
+            
+            // Aggiorna il testo nel pulsante con la traduzione corretta
+            const flag = display.split(' ')[0]; // Prende solo la bandiera/emoji
+            const translatedName = translations[currentUILanguage][value]; // Prende il nome tradotto
+            selectedText.textContent = flag + ' ' + translatedName;
             
             // Close the dropdown
             toggleSelect(type + '-language');
@@ -1754,10 +1897,24 @@
 
             // Update modal content language
             updateModalLanguage(lang);
+
+            // Aggiorna i testi dei pulsanti selezionati nei menu
+            const firstBtn = document.getElementById('first-language-btn');
+            const secondBtn = document.getElementById('second-language-btn');
+            const firstSelected = firstBtn.querySelector('.selected-text');
+            const secondSelected = secondBtn.querySelector('.selected-text');
+
+            // Aggiorna primo menu
+            const firstFlag = firstSelected.textContent.split(' ')[0];
+            firstSelected.textContent = firstFlag + ' ' + translations[lang][selectedLanguages.first];
+
+            // Aggiorna secondo menu  
+            const secondFlag = secondSelected.textContent.split(' ')[0];
+            secondSelected.textContent = secondFlag + ' ' + translations[lang][selectedLanguages.second];
         }
 
         function updateModalLanguage(lang) {
-            const enContent = document.getElementById('modal-content-en');
+            const enContent = document.querySelector('[data-text="fileFormatContent"]');
             const itContent = document.getElementById('modal-content-it');
             
             // Check if elements exist before manipulating them
@@ -1766,13 +1923,13 @@
                 return;
             }
             
-            if (lang === 'en') {
-                enContent.classList.remove('hidden');
-                itContent.classList.add('hidden');
+           if (lang === 'en') {
+                if (enContent) enContent.style.display = 'block';
+                if (itContent) itContent.style.display = 'none';
             } else {
-                enContent.classList.add('hidden');
-                itContent.classList.remove('hidden');
-            }
+                if (enContent) enContent.style.display = 'none';
+                if (itContent) itContent.style.display = 'block';
+            } 
         }
 
         // Language setup functions
@@ -1872,7 +2029,7 @@
             
             usageElement.innerHTML = `
                 <div class="usage-header">
-                    <span>Audio Usage</span>
+                    <span>${translations[currentUILanguage].audioUsage}</span>
                     <span class="usage-percentage">${percentage}%</span>
                 </div>
                 <div class="usage-bar">
@@ -1883,7 +2040,7 @@
                     }"></div>
                 </div>
                 <div class="usage-details">
-                    <small>${usage.characters_used}/${usage.characters_limit} caratteri | ${usage.requests_made} richieste</small>
+                    <small>${usage.characters_used}/${usage.characters_limit} ${translations[currentUILanguage].characters} | ${usage.requests_made} ${translations[currentUILanguage].requests}</small>
                 </div>
             `;
             usageElement.className = `usage-info status ${statusClass}`;
@@ -2383,20 +2540,27 @@
             
             if (percentage >= 90) {
                 performanceIcon = '🏆';
-                performanceText = 'Outstanding Performance!';
+                performanceText = translations[currentUILanguage].outstandingPerformance;
                 performanceColor = '#10b981';
             } else if (percentage >= 70) {
                 performanceIcon = '🎉';
-                performanceText = 'Excellent Work!';
+                performanceText = translations[currentUILanguage].excellentWork;
                 performanceColor = '#6366f1';
             } else if (percentage >= 50) {
                 performanceIcon = '💪';
-                performanceText = 'Good Job, Keep Practicing!';
+                performanceText = translations[currentUILanguage].goodJobKeepPracticing;
                 performanceColor = '#f59e0b';
             } else {
                 performanceIcon = '📚';
-                performanceText = 'Keep Studying - You\'ll Improve!';
+                performanceText = translations[currentUILanguage].keepStudying;
                 performanceColor = '#ef4444';
+            }
+
+            let tipMessage;
+            if (percentage < 70) {
+                tipMessage = translations[currentUILanguage].tipReview;
+            } else {
+                tipMessage = translations[currentUILanguage].tipChallenge;
             }
             
             resultsContent.innerHTML = `
@@ -2410,30 +2574,29 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin: 2rem 0;">
                     <div class="stat-card">
                         <div class="stat-value">${data.questions_asked}</div>
-                        <div class="stat-label">Questions Answered</div>
+                        <div class="stat-label">${translations[currentUILanguage].questionsAnswered}</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${data.final_score}</div>
-                        <div class="stat-label">Final Score</div>
+                        <div class="stat-label">${translations[currentUILanguage].finalScore}</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" style="color: ${performanceColor};">${percentage}%</div>
-                        <div class="stat-label">Success Rate</div>
+                        <div class="stat-label">${translations[currentUILanguage].successRate}</div>
                     </div>
                 </div>
                 
                 <div style="background: var(--surface); padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-border); margin-top: 2rem;">
-                    <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.25rem;">Session Summary</h3>
+                    <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.25rem;">${translations[currentUILanguage].sessionSummary}</h3>
                     <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem;">
-                        You completed ${data.questions_asked} questions with a success rate of ${percentage}%.
-                        ${percentage >= 70 ? 'Great job! You\'re making excellent progress.' : 
-                          percentage >= 50 ? 'Good work! Keep practicing to improve your accuracy.' :
-                          'Don\'t give up! Regular practice will help you improve.'}
+                        ${translations[currentUILanguage].completedQuestions.replace('{0}', data.questions_asked).replace('{1}', percentage)}
+                        ${percentage >= 70 ? translations[currentUILanguage].greatProgress : 
+                        percentage >= 50 ? translations[currentUILanguage].goodProgress :
+                        translations[currentUILanguage].keepTrying}
                     </p>
-                    ${percentage < 70 ? 
-                        '<p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">💡 Tip: Try reviewing the material before your next session for better results.</p>' : 
-                        '<p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">🎯 You\'re doing great! Challenge yourself with more questions in your next session.</p>'
-                    }
+                    <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">
+                        ${percentage < 70 ? translations[currentUILanguage].tipReview : translations[currentUILanguage].tipChallenge}
+                    </p>
                 </div>
             `;
         }
