@@ -5,9 +5,10 @@ import random
 import re
 import tempfile
 import os
-from gtts import gTTS
-from playsound import playsound
 import requests
+import json
+import base64
+from datetime import datetime
 from threading import Thread
 import logging
 
@@ -33,15 +34,154 @@ class EnglishLearningBackend:
         self.game_active = False
         self.solution_visible = False
         
-        # Language mapping for TTS
-        self.language_codes = {
-            'italian': 'it',
-            'english': 'en', 
-            'french': 'fr',
-            'spanish': 'es',
-            'german': 'de'
+        # ElevenLabs configuration
+        self.elevenlabs_api_key = os.getenv('ELEVENLABS_API_KEY', 'your_api_key_here')
+        self.elevenlabs_base_url = "https://api.elevenlabs.io/v1"
+        
+        # Character usage tracking
+        self.usage_file = 'elevenlabs_usage.json'
+        self.max_monthly_chars = 10000  # Free tier limit
+        
+        # Language mapping for ElevenLabs voices
+        self.elevenlabs_voices = {
+            'english': 'EXAVITQu4vr4xnSDxMaL',  # Bella - English
+            'italian': 'XB0fDUnXU5powFXDhCwa',   # Charlotte - Multilingual
+            'french': 'XB0fDUnXU5powFXDhCwa',    # Charlotte - Multilingual  
+            'spanish': 'XB0fDUnXU5powFXDhCwa',   # Charlotte - Multilingual
+            'german': 'XB0fDUnXU5powFXDhCwa'     # Charlotte - Multilingual
+        }
+        
+        # Initialize usage tracking
+        self.init_usage_tracking()
+
+    def init_usage_tracking(self):
+        """Initialize or load usage tracking data"""
+        try:
+            if os.path.exists(self.usage_file):
+                with open(self.usage_file, 'r') as f:
+                    self.usage_data = json.load(f)
+            else:
+                self.usage_data = {
+                    'current_month': datetime.now().strftime('%Y-%m'),
+                    'characters_used': 0,
+                    'requests_made': 0
+                }
+                self.save_usage_data()
+        except Exception as e:
+            logger.error(f"Error loading usage data: {e}")
+            self.usage_data = {
+                'current_month': datetime.now().strftime('%Y-%m'),
+                'characters_used': 0,
+                'requests_made': 0
+            }
+
+    def save_usage_data(self):
+        """Save usage tracking data to file"""
+        try:
+            with open(self.usage_file, 'w') as f:
+                json.dump(self.usage_data, f)
+        except Exception as e:
+            logger.error(f"Error saving usage data: {e}")
+
+    def check_monthly_reset(self):
+        """Reset counter if it's a new month"""
+        current_month = datetime.now().strftime('%Y-%m')
+        if self.usage_data['current_month'] != current_month:
+            self.usage_data = {
+                'current_month': current_month,
+                'characters_used': 0,
+                'requests_made': 0
+            }
+            self.save_usage_data()
+            logger.info("Monthly usage counter reset")
+
+    def can_use_audio(self, text_length):
+        """Check if we can use audio API within limits"""
+        self.check_monthly_reset()
+        
+        remaining_chars = self.max_monthly_chars - self.usage_data['characters_used']
+        if remaining_chars < text_length:
+            return False, f"Monthly limit exceeded. Used: {self.usage_data['characters_used']}/{self.max_monthly_chars} characters"
+        
+        return True, f"Characters available: {remaining_chars}/{self.max_monthly_chars}"
+
+    def update_usage(self, characters_used):
+        """Update usage counter"""
+        self.usage_data['characters_used'] += characters_used
+        self.usage_data['requests_made'] += 1
+        self.save_usage_data()
+        
+        logger.info(f"Updated usage: {self.usage_data['characters_used']}/{self.max_monthly_chars} characters used")
+
+    def get_usage_info(self):
+        """Get current usage information"""
+        self.check_monthly_reset()
+        return {
+            'characters_used': self.usage_data['characters_used'],
+            'characters_limit': self.max_monthly_chars,
+            'characters_remaining': self.max_monthly_chars - self.usage_data['characters_used'],
+            'requests_made': self.usage_data['requests_made'],
+            'current_month': self.usage_data['current_month']
         }
 
+    def generate_audio_elevenlabs(self, text, language):
+        """Generate audio using ElevenLabs API"""
+        try:
+            # Check if we can make the request
+            can_use, message = self.can_use_audio(len(text))
+            if not can_use:
+                return None, message
+
+            voice_id = self.elevenlabs_voices.get(language, self.elevenlabs_voices['english'])
+            
+            url = f"{self.elevenlabs_base_url}/text-to-speech/{voice_id}"
+            
+            headers = {
+                "Accept": "audio/mpeg",
+                "Content-Type": "application/json",
+                "xi-api-key": self.elevenlabs_api_key
+            }
+            
+            data = {
+                "text": text,
+                "model_id": "eleven_multilingual_v2",
+                "voice_settings": {
+                    "stability": 0.5,
+                    "similarity_boost": 0.5,
+                    "style": 0.0,
+                    "use_speaker_boost": True
+                }
+            }
+            
+            response = requests.post(url, json=data, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                # Update usage counter
+                self.update_usage(len(text))
+                
+                # Convert audio to base64
+                audio_base64 = base64.b64encode(response.content).decode('utf-8')
+                return audio_base64, "Audio generated successfully"
+            else:
+                error_msg = f"ElevenLabs API error: {response.status_code}"
+                if response.content:
+                    try:
+                        error_data = response.json()
+                        error_msg += f" - {error_data.get('detail', 'Unknown error')}"
+                    except:
+                        pass
+                logger.error(error_msg)
+                return None, error_msg
+                
+        except requests.exceptions.Timeout:
+            return None, "Audio generation timeout"
+        except requests.exceptions.RequestException as e:
+            return None, f"Network error: {str(e)}"
+        except Exception as e:
+            logger.error(f"Audio generation error: {e}")
+            return None, f"Audio generation failed: {str(e)}"
+
+    # [Mantieni tutti gli altri metodi della classe originale...]
     def parse_variants(self, text):
         if not text or not isinstance(text, str):
             return []
@@ -172,12 +312,17 @@ class EnglishLearningBackend:
     def set_languages(self, first_lang, second_lang):
         self.first_language = first_lang.lower()
         self.second_language = second_lang.lower()
-        self.audio_enabled = first_lang.lower() != 'other' and second_lang.lower() != 'other'
+        self.audio_enabled = (
+            first_lang.lower() != 'other' and 
+            second_lang.lower() != 'other' and
+            self.elevenlabs_api_key != 'your_api_key_here'
+        )
         
         return {
             "success": True,
             "audio_enabled": self.audio_enabled,
-            "message": "Languages set successfully"
+            "message": "Languages set successfully",
+            "usage_info": self.get_usage_info() if self.audio_enabled else None
         }
 
     def start_game(self, mode, max_questions, max_passes):
@@ -220,7 +365,8 @@ class EnglishLearningBackend:
             "max_questions": self.max_questions,
             "passes_left": self.passes_left,
             "audio_enabled": self.audio_enabled,
-            "solution_visible": False
+            "solution_visible": False,
+            "usage_info": self.get_usage_info() if self.audio_enabled else None
         }
 
     def show_solution(self):
@@ -302,56 +448,54 @@ class EnglishLearningBackend:
         else:
             return {"success": False, "message": "No more passes available!"}
 
-    def play_audio(self):
+    def get_audio(self):
+        """Get audio for current question or solution"""
         if not self.game_active or not self.current_word or not self.audio_enabled:
             return {"success": False, "message": "Audio not available"}
         
-        def speak():
-            try:
-                # Determine what word is currently visible and use its correct language
-                if self.solution_visible:
-                    # Solution is visible - speak the solution word in solution's language
-                    if self.current_mode == "first_second":
-                        # We're translating first->second, so solution is second language
-                        word_to_speak = self.current_word['second_main']
-                        lang_code = self.language_codes.get(self.second_language, 'en')
-                        logger.info(f"Speaking solution: '{word_to_speak}' in {self.second_language} ({lang_code})")
-                    else:
-                        # We're translating second->first, so solution is first language
-                        word_to_speak = self.current_word['first_main']  
-                        lang_code = self.language_codes.get(self.first_language, 'en')
-                        logger.info(f"Speaking solution: '{word_to_speak}' in {self.first_language} ({lang_code})")
+        try:
+            # Determine what word is currently visible and use its correct language
+            if self.solution_visible:
+                # Solution is visible - speak the solution word in solution's language
+                if self.current_mode == "first_second":
+                    # We're translating first->second, so solution is second language
+                    word_to_speak = self.current_word['second_main']
+                    lang_code = self.second_language
+                    logger.info(f"Speaking solution: '{word_to_speak}' in {self.second_language}")
                 else:
-                    # Question is visible - speak the question word in question's language
-                    if self.current_mode == "first_second":
-                        # We're translating first->second, so question is first language
-                        word_to_speak = self.current_word['first_main']
-                        lang_code = self.language_codes.get(self.first_language, 'en')
-                        logger.info(f"Speaking question: '{word_to_speak}' in {self.first_language} ({lang_code})")
-                    else:
-                        # We're translating second->first, so question is second language
-                        word_to_speak = self.current_word['second_main']
-                        lang_code = self.language_codes.get(self.second_language, 'en')
-                        logger.info(f"Speaking question: '{word_to_speak}' in {self.second_language} ({lang_code})")
+                    # We're translating second->first, so solution is first language
+                    word_to_speak = self.current_word['first_main']  
+                    lang_code = self.first_language
+                    logger.info(f"Speaking solution: '{word_to_speak}' in {self.first_language}")
+            else:
+                # Question is visible - speak the question word in question's language
+                if self.current_mode == "first_second":
+                    # We're translating first->second, so question is first language
+                    word_to_speak = self.current_word['first_main']
+                    lang_code = self.first_language
+                    logger.info(f"Speaking question: '{word_to_speak}' in {self.first_language}")
+                else:
+                    # We're translating second->first, so question is second language
+                    word_to_speak = self.current_word['second_main']
+                    lang_code = self.second_language
+                    logger.info(f"Speaking question: '{word_to_speak}' in {self.second_language}")
+            
+            # Generate audio using ElevenLabs
+            audio_base64, message = self.generate_audio_elevenlabs(word_to_speak, lang_code)
+            
+            if audio_base64:
+                return {
+                    "success": True,
+                    "audio": audio_base64,
+                    "message": message,
+                    "usage_info": self.get_usage_info()
+                }
+            else:
+                return {"success": False, "message": message}
                 
-                tts = gTTS(text=word_to_speak, lang=lang_code)
-                
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as tmp_file:
-                    tmp_filename = tmp_file.name
-                    tts.save(tmp_filename)
-                
-                playsound(tmp_filename)
-                
-                try:
-                    os.unlink(tmp_filename)
-                except:
-                    pass
-                    
-            except Exception as e:
-                logger.error(f"Audio error: {e}")
-        
-        Thread(target=speak, daemon=True).start()
-        return {"success": True, "message": "Audio playback started"}
+        except Exception as e:
+            logger.error(f"Audio generation error: {e}")
+            return {"success": False, "message": f"Audio generation failed: {str(e)}"}
             
     def end_game(self):
         if not self.game_active:
@@ -367,7 +511,8 @@ class EnglishLearningBackend:
             "final_score": self.score,
             "questions_asked": self.questions_asked,
             "percentage": round(percentage, 1),
-            "message": f"GAME ENDED! Score: {self.score}/{self.questions_asked} ({percentage:.1f}%)"
+            "message": f"GAME ENDED! Score: {self.score}/{self.questions_asked} ({percentage:.1f}%)",
+            "usage_info": self.get_usage_info() if self.audio_enabled else None
         }
 
 # Global backend instance
@@ -456,9 +601,13 @@ def api_pass_question():
     return jsonify(result)
 
 @app.route('/api/play_audio', methods=['POST'])
-def api_play_audio():
-    result = backend.play_audio()
+def api_get_audio():
+    result = backend.get_audio()
     return jsonify(result)
+
+@app.route('/api/usage_info', methods=['GET'])
+def api_usage_info():
+    return jsonify(backend.get_usage_info())
 
 @app.route('/api/end_game', methods=['POST'])
 def api_end_game():
@@ -472,7 +621,8 @@ def api_status():
         "vocabulary_count": len(backend.vocabulary),
         "score": backend.score,
         "questions_asked": backend.questions_asked,
-        "audio_enabled": backend.audio_enabled
+        "audio_enabled": backend.audio_enabled,
+        "usage_info": backend.get_usage_info() if backend.audio_enabled else None
     })
 
 if __name__ == '__main__':
