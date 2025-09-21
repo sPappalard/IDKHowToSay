@@ -163,7 +163,7 @@
         #results-screen .language-selector {
             display: none;
         }
-        
+
         .lang-btn {
             background: transparent;
             border: none;
@@ -1641,7 +1641,10 @@
 
     <script>
         // Global variables
-        const API_BASE_URL = 'http://localhost:5000/api';
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000/api' 
+            : window.location.origin + '/api';
+        
         let currentUILanguage = 'en';
         let selectedLanguages = {
             first: 'english',
