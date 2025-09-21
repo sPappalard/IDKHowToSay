@@ -1085,6 +1085,99 @@
                 padding: 2rem 1rem;
             }
         }
+
+        .usage-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--surface);
+            transition: all 0.3s ease;
+        }
+
+        .usage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .usage-percentage {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .usage-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--surface);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .usage-fill {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .usage-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .usage-details {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .usage-info.success .usage-header {
+            color: #10b981;
+        }
+
+        .usage-info.loading .usage-header {
+            color: #f59e0b;
+        }
+
+        .usage-info.error .usage-header {
+            color: #ef4444;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .usage-info {
+                padding: 0.75rem;
+            }
+            
+            .usage-header {
+                font-size: 0.85rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .usage-details {
+                font-size: 0.7rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1186,16 +1279,7 @@
                     <h5>⚠️ Important Notes</h5>
                     <p>• Make sure language selections match your file columns<br>
                     • First column = First Language, Second column = Second Language<br>
-                    • Headers are optional - the system reads all rows<br>
                     • Empty rows will be automatically skipped</p>
-                </div>
-
-                <div class="feature-highlight">
-                    <h5>🎯 Pro Tips</h5>
-                    <p>• Include common phrases, not just individual words<br>
-                    • Add context in parentheses: "bank (financial)" vs "bank (river)"<br>
-                    • Use consistent formatting for better recognition<br>
-                    • Test with a small file first to ensure proper formatting</p>
                 </div>
             </div>
         </div>
@@ -1476,6 +1560,8 @@
             waitingForNext: false
         };
 
+        let usageInfo = null;
+
         // Translations
         const translations = {
             en: {
@@ -1705,7 +1791,21 @@
             .then(data => {
                 if (data.success) {
                     gameState.audioEnabled = data.audio_enabled;
+                    if (data.usage_info) {
+                        usageInfo = data.usage_info;
+                    }
                     updateAudioStatus();
+                    
+                    // SE L'AUDIO È ABILITATO MA NON ABBIAMO USAGE INFO, RICHIEDILA
+                    if (gameState.audioEnabled && !usageInfo) {
+                        fetch(`${API_BASE_URL}/usage_info`)
+                        .then(response => response.json())
+                        .then(usageData => {
+                            usageInfo = usageData;
+                            updateUsageDisplay(usageInfo);
+                        })
+                        .catch(error => console.log('Usage info not available'));
+                    }
                 }
             })
             .catch(error => {
@@ -1721,12 +1821,74 @@
                 statusEl.innerHTML = `<span data-text="audioEnabled">${translations[currentUILanguage].audioEnabled}</span>`;
                 statusEl.className = 'status success';
                 if (audioBtn) audioBtn.disabled = false;
+                
+                // Mostra info utilizzo se disponibili
+                if (usageInfo) {
+                    updateUsageDisplay(usageInfo);
+                }
             } else {
-                statusEl.innerHTML = `<span data-text="audioDisabled">${translations[currentUILanguage].audioDisabled}</span>`;
+                // Determina il motivo della disattivazione
+                if (selectedLanguages.first === 'other' || selectedLanguages.second === 'other') {
+                    statusEl.innerHTML = `<span>🔇 Audio disabled (Other language selected)</span>`;
+                } else {
+                    statusEl.innerHTML = `<span>🔇 Audio disabled (API key required)</span>`;
+                }
                 statusEl.className = 'status error';
                 if (audioBtn) audioBtn.disabled = true;
+                
+                // Nascondi info utilizzo
+                const usageElement = document.getElementById('usage-display');
+                if (usageElement) {
+                    usageElement.style.display = 'none';
+                }
             }
         }
+
+        // Funzione per aggiornare il display dell'utilizzo audio
+        function updateUsageDisplay(usage) {
+            if (!usage) return;
+            
+            usageInfo = usage;
+            
+            let usageElement = document.getElementById('usage-display');
+            if (!usageElement) {
+                usageElement = document.createElement('div');
+                usageElement.id = 'usage-display';
+                
+                // Trova il posto giusto dove inserirlo
+                const audioStatus = document.getElementById('audio-status');
+                if (audioStatus && audioStatus.parentNode) {
+                    audioStatus.parentNode.insertBefore(usageElement, audioStatus.nextSibling);
+                }
+            }
+            
+            // Assicurati che sia sempre visibile quando dovrebbe esserlo
+            usageElement.style.display = 'block';
+            
+            const percentage = Math.round((usage.characters_used / usage.characters_limit) * 100);
+            let statusClass = 'success';
+            if (percentage >= 90) statusClass = 'error';
+            else if (percentage >= 75) statusClass = 'loading';
+            
+            usageElement.innerHTML = `
+                <div class="usage-header">
+                    <span>Audio Usage</span>
+                    <span class="usage-percentage">${percentage}%</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-fill" style="width: ${percentage}%; background: ${
+                        percentage >= 90 ? 'var(--danger-gradient)' : 
+                        percentage >= 75 ? 'var(--warning-gradient)' : 
+                        'var(--secondary-gradient)'
+                    }"></div>
+                </div>
+                <div class="usage-details">
+                    <small>${usage.characters_used}/${usage.characters_limit} caratteri | ${usage.requests_made} richieste</small>
+                </div>
+            `;
+            usageElement.className = `usage-info status ${statusClass}`;
+        }
+
 
         // Modal functions
         function showInfoModal() {
@@ -1909,6 +2071,7 @@
             // Hide solution and reset buttons
             document.getElementById('solution-container').style.display = 'none';
             document.getElementById('check-btn').style.display = 'inline-flex';
+            document.getElementById('pass-btn').style.display = 'inline-flex';
             document.getElementById('solution-btn').querySelector('span').textContent = translations[currentUILanguage].showSolution;
             document.getElementById('next-btn').style.display = 'none';
             
@@ -2056,8 +2219,9 @@
                         document.getElementById('solution-btn').querySelector('span').textContent = translations[currentUILanguage].hideSolution;
                     }
                     
-                    // Show next button and hide check button
+                    // AGGIUNGI QUESTE RIGHE PER NASCONDERE I PULSANTI
                     document.getElementById('check-btn').style.display = 'none';
+                    document.getElementById('pass-btn').style.display = 'none'; // Nascondi skip question
                     document.getElementById('next-btn').style.display = 'inline-flex';
                     gameState.waitingForNext = true;
                 } else {
@@ -2076,18 +2240,71 @@
                 return;
             }
             
+            // Controlla se abbiamo ancora caratteri disponibili
+            if (usageInfo && usageInfo.characters_remaining <= 0) {
+                alert(translations[currentUILanguage].limitReached);
+                return;
+            }
+            
+            // Disabilita temporaneamente il pulsante
+            const audioBtn = document.getElementById('audio-btn');
+            if (audioBtn) {
+                audioBtn.disabled = true;
+                audioBtn.innerHTML = '⏳';
+            }
+            
             fetch(`${API_BASE_URL}/play_audio`, {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             })
             .then(response => response.json())
             .then(data => {
-                if (!data.success) {
-                    alert(data.message);
+                console.log('Audio API response:', data); // DEBUG
+                
+                if (data.success && data.audio) {
+                    console.log('Attempting to play audio...'); // DEBUG
+                    
+                    // Riproduci l'audio usando base64
+                    const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
+                    
+                    // Aggiungi event listeners per debug
+                    audio.addEventListener('loadstart', () => console.log('Audio loading started'));
+                    audio.addEventListener('canplay', () => console.log('Audio can start playing'));
+                    audio.addEventListener('ended', () => console.log('Audio playback ended'));
+                    audio.addEventListener('error', (e) => console.error('Audio error:', e));
+                    
+                    audio.play().then(() => {
+                        console.log('Audio started successfully');
+                    }).catch(error => {
+                        console.error('Audio playback failed:', error);
+                        alert('Audio playback failed. Try clicking play after the page has loaded completely.');
+                    });
+                    
+                    // Aggiorna info utilizzo
+                    if (data.usage_info) {
+                        usageInfo = data.usage_info;
+                        updateUsageDisplay(usageInfo);
+                    }
+                } else {
+                    console.error('Audio API error:', data);
+                    alert(data.message || translations[currentUILanguage].audioUnavailable);
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Server connection error');
+                console.error('Audio fetch error:', error);
+                alert('Audio service temporarily unavailable');
+            })
+            .finally(() => {
+                // Riabilita il pulsante
+                if (audioBtn) {
+                    audioBtn.innerHTML = '🔊';
+                    // Riabilita solo se abbiamo ancora caratteri disponibili
+                    if (usageInfo && usageInfo.characters_remaining > 0) {
+                        audioBtn.disabled = false;
+                    }
+                }
             });
         }
 

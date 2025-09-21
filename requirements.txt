@@ -5,3 +5,4 @@ flask-cors
 pandas 
 gtts  
 requests
+python-dotenv
