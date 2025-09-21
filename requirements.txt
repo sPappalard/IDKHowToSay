@@ -1,8 +1,10 @@
-openpyxl
-playsound==1.2.2
-flask 
-flask-cors 
-pandas 
-gtts  
-requests
-python-dotenv
+ Flask==3.1.2
+flask-cors==4.0.0
+pandas==2.0.3
+python-dotenv == 1.1.1
+openpyxl==3.1.2
+requests==2.31.0
+xlrd==2.0.1
+gTTS==2.3.2
+pydub==0.25.1
+google-cloud-texttospeech==2.14.2

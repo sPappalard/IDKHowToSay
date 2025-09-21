@@ -143,7 +143,7 @@
         }
 
         .language-selector {
-            position: fixed;
+            position: absolute;
             top: 20px;
             right: 20px;
             z-index: 1000;
@@ -152,10 +152,18 @@
             background: var(--glass);
             padding: 8px;
             border-radius: 12px;
-            
             border: 1px solid var(--glass-border);
         }
 
+        #menu-screen .language-selector {
+            display: flex;
+        }
+
+        #game-screen .language-selector,
+        #results-screen .language-selector {
+            display: none;
+        }
+        
         .lang-btn {
             background: transparent;
             border: none;
