@@ -1713,7 +1713,10 @@
                 tipChallenge: "🎯 You're doing great! Challenge yourself with more questions in your next session.",
                 audioUsage: "Audio Usage",
                 characters: "characters",
-                requests: "requests"
+                requests: "requests",
+                questionSkipped: "Question skipped",
+                audioDisabledOther: "Audio disabled (Other language selected)",
+                audioDisabledAPI: "Audio disabled (API key required)",
             },
             it: {
                 mainTitle: "🤷 IDK how to say",
@@ -1779,7 +1782,10 @@
                 tipChallenge: "🎯 Stai andando benissimo! Sfidati con più domande nella prossima sessione.",
                 audioUsage: "Utilizzo Audio",
                 characters: "caratteri",
-                requests: "richieste"
+                requests: "richieste",
+                questionSkipped: "Domanda saltata",
+                audioDisabledOther: "Audio disabilitato (Altra lingua selezionata)",
+                audioDisabledAPI: "Audio disabilitato (Chiave API richiesta)",
             }
         };
 
@@ -1917,19 +1923,25 @@
             const enContent = document.querySelector('[data-text="fileFormatContent"]');
             const itContent = document.getElementById('modal-content-it');
             
-            // Check if elements exist before manipulating them
-            if (!enContent || !itContent) {
-                console.warn('Modal content elements not found');
-                return;
+            if (lang === 'en') {
+                if (enContent) {
+                    enContent.style.display = 'block';
+                    enContent.classList.remove('hidden');
+                }
+                if (itContent) {
+                    itContent.style.display = 'none';
+                    itContent.classList.add('hidden');
+                }
+            } else if (lang === 'it') {
+                if (enContent) {
+                    enContent.style.display = 'none';
+                    enContent.classList.add('hidden');
+                }
+                if (itContent) {
+                    itContent.style.display = 'block';
+                    itContent.classList.remove('hidden');
+                }
             }
-            
-           if (lang === 'en') {
-                if (enContent) enContent.style.display = 'block';
-                if (itContent) itContent.style.display = 'none';
-            } else {
-                if (enContent) enContent.style.display = 'none';
-                if (itContent) itContent.style.display = 'block';
-            } 
         }
 
         // Language setup functions
@@ -1986,9 +1998,9 @@
             } else {
                 // Determina il motivo della disattivazione
                 if (selectedLanguages.first === 'other' || selectedLanguages.second === 'other') {
-                    statusEl.innerHTML = `<span>🔇 Audio disabled (Other language selected)</span>`;
+                    statusEl.innerHTML = `<span>🔇 ${translations[currentUILanguage].audioDisabledOther}</span>`;
                 } else {
-                    statusEl.innerHTML = `<span>🔇 Audio disabled (API key required)</span>`;
+                    statusEl.innerHTML = `<span>🔇 ${translations[currentUILanguage].audioDisabledAPI}</span>`;
                 }
                 statusEl.className = 'status error';
                 if (audioBtn) audioBtn.disabled = true;
@@ -2363,7 +2375,7 @@
             .then(data => {
                 if (data.success) {
                     const resultEl = document.getElementById('result-message');
-                    resultEl.textContent = data.message;
+                    resultEl.textContent = translations[currentUILanguage].questionSkipped;
                     resultEl.className = 'result-message result-skipped';
                     
                     document.getElementById('passes-left').textContent = data.passes_left;
