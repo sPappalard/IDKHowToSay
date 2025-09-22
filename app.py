@@ -6,6 +6,7 @@ import re
 import tempfile
 import os
 import requests
+from google.cloud import texttospeech
 import json
 import base64
 from datetime import datetime
