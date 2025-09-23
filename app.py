@@ -7,6 +7,7 @@ import tempfile
 import os
 import requests
 from google.cloud import texttospeech
+from google.oauth2 import service_account
 import json
 import base64
 from datetime import datetime
@@ -35,25 +36,59 @@ class EnglishLearningBackend:
         self.game_active = False
         self.solution_visible = False
         
-        # ElevenLabs configuration
-        self.elevenlabs_api_key = os.getenv('ELEVENLABS_API_KEY', 'your_api_key_here')
-        self.elevenlabs_base_url = "https://api.elevenlabs.io/v1"
-        
+        # Google Cloud Text-to-Speech configuration
+        self.tts_client = None
+        self.init_google_tts()
+
         # Character usage tracking
-        self.usage_file = 'elevenlabs_usage.json'
-        self.max_monthly_chars = 10000  # Free tier limit
-        
-        # Language mapping for ElevenLabs voices
-        self.elevenlabs_voices = {
-            'english': 'EXAVITQu4vr4xnSDxMaL',  # Bella - English
-            'italian': 'XB0fDUnXU5powFXDhCwa',   # Charlotte - Multilingual
-            'french': 'XB0fDUnXU5powFXDhCwa',    # Charlotte - Multilingual  
-            'spanish': 'XB0fDUnXU5powFXDhCwa',   # Charlotte - Multilingual
-            'german': 'XB0fDUnXU5powFXDhCwa'     # Charlotte - Multilingual
+        self.usage_file = 'google_tts_usage.json'
+        self.max_monthly_chars = 1000000  # Google free tier limit
+
+        # Language mapping for Google TTS voices
+        self.google_voices = {
+            'english': {'language_code': 'en-US', 'name': 'en-US-Neural2-F'},
+            'italian': {'language_code': 'it-IT', 'name': 'it-IT-Neural2-A'},
+            'french': {'language_code': 'fr-FR', 'name': 'fr-FR-Neural2-A'},
+            'spanish': {'language_code': 'es-ES', 'name': 'es-ES-Neural2-A'},
+            'german': {'language_code': 'de-DE', 'name': 'de-DE-Neural2-A'}
         }
         
         # Initialize usage tracking
         self.init_usage_tracking()
+
+
+    def init_google_tts(self):
+        """Initialize Google Cloud Text-to-Speech client"""
+        try:
+            # Try to get JSON content from environment variable
+            credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+            
+            if credentials_json:
+                try:
+                    # Try to parse as JSON content first
+                    import json
+                    
+                    credentials_info = json.loads(credentials_json)
+                    credentials = service_account.Credentials.from_service_account_info(credentials_info)
+                    self.tts_client = texttospeech.TextToSpeechClient(credentials=credentials)
+                    logger.info("Google TTS client initialized from JSON content in env var")
+                    
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, treat it as a file path
+                    if os.path.exists(credentials_json):
+                        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_json
+                        self.tts_client = texttospeech.TextToSpeechClient()
+                        logger.info("Google TTS client initialized from file path")
+                    else:
+                        logger.error(f"Invalid JSON and file not found: {credentials_json}")
+                        self.tts_client = None
+            else:
+                logger.warning("GOOGLE_APPLICATION_CREDENTIALS not set")
+                self.tts_client = None
+                
+        except Exception as e:
+            logger.error(f"Failed to initialize Google TTS: {e}")
+            self.tts_client = None
 
     def init_usage_tracking(self):
         """Initialize or load usage tracking data"""
@@ -125,61 +160,56 @@ class EnglishLearningBackend:
             'current_month': self.usage_data['current_month']
         }
 
-    def generate_audio_elevenlabs(self, text, language):
-        """Generate audio using ElevenLabs API"""
+    
+    def generate_audio_google_tts(self, text, language):
+        """Generate audio using Google Cloud Text-to-Speech API"""
         try:
+            if not self.tts_client:
+                return None, "Google TTS client not initialized"
+                
             # Check if we can make the request
             can_use, message = self.can_use_audio(len(text))
             if not can_use:
                 return None, message
 
-            voice_id = self.elevenlabs_voices.get(language, self.elevenlabs_voices['english'])
-            
-            url = f"{self.elevenlabs_base_url}/text-to-speech/{voice_id}"
-            
-            headers = {
-                "Accept": "audio/mpeg",
-                "Content-Type": "application/json",
-                "xi-api-key": self.elevenlabs_api_key
-            }
-            
-            data = {
-                "text": text,
-                "model_id": "eleven_multilingual_v2",
-                "voice_settings": {
-                    "stability": 0.5,
-                    "similarity_boost": 0.5,
-                    "style": 0.0,
-                    "use_speaker_boost": True
-                }
-            }
-            
-            response = requests.post(url, json=data, headers=headers, timeout=30)
-            
-            if response.status_code == 200:
+            # Get voice configuration for the language
+            voice_config = self.google_voices.get(language)
+            if not voice_config:
+                voice_config = self.google_voices['english']  # Fallback to English
+
+            # Set the text input to be synthesized
+            synthesis_input = texttospeech.SynthesisInput(text=text)
+
+            # Build the voice request
+            voice = texttospeech.VoiceSelectionParams(
+                language_code=voice_config['language_code'],
+                name=voice_config['name']
+            )
+
+            # Select the type of audio file you want returned
+            audio_config = texttospeech.AudioConfig(
+                audio_encoding=texttospeech.AudioEncoding.MP3
+            )
+
+            # Perform the text-to-speech request
+            response = self.tts_client.synthesize_speech(
+                input=synthesis_input,
+                voice=voice,
+                audio_config=audio_config
+            )
+
+            if response.audio_content:
                 # Update usage counter
                 self.update_usage(len(text))
                 
                 # Convert audio to base64
-                audio_base64 = base64.b64encode(response.content).decode('utf-8')
+                audio_base64 = base64.b64encode(response.audio_content).decode('utf-8')
                 return audio_base64, "Audio generated successfully"
             else:
-                error_msg = f"ElevenLabs API error: {response.status_code}"
-                if response.content:
-                    try:
-                        error_data = response.json()
-                        error_msg += f" - {error_data.get('detail', 'Unknown error')}"
-                    except:
-                        pass
-                logger.error(error_msg)
-                return None, error_msg
+                return None, "No audio content received from Google TTS"
                 
-        except requests.exceptions.Timeout:
-            return None, "Audio generation timeout"
-        except requests.exceptions.RequestException as e:
-            return None, f"Network error: {str(e)}"
         except Exception as e:
-            logger.error(f"Audio generation error: {e}")
+            logger.error(f"Google TTS error: {e}")
             return None, f"Audio generation failed: {str(e)}"
 
     # [Mantieni tutti gli altri metodi della classe originale...]
@@ -316,7 +346,7 @@ class EnglishLearningBackend:
         self.audio_enabled = (
             first_lang.lower() != 'other' and 
             second_lang.lower() != 'other' and
-            self.elevenlabs_api_key != 'your_api_key_here'
+            self.tts_client is not None
         )
         
         return {
@@ -481,8 +511,8 @@ class EnglishLearningBackend:
                     lang_code = self.second_language
                     logger.info(f"Speaking question: '{word_to_speak}' in {self.second_language}")
             
-            # Generate audio using ElevenLabs
-            audio_base64, message = self.generate_audio_elevenlabs(word_to_speak, lang_code)
+            # Generate audio using Google TTS
+            audio_base64, message = self.generate_audio_google_tts(word_to_speak, lang_code)
             
             if audio_base64:
                 return {
