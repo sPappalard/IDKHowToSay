@@ -264,6 +264,7 @@
             opacity: 1;
             visibility: visible;
             transform: translateY(0) scale(1);
+            z-index: 2000;
         }
 
         .select-option {
@@ -1071,9 +1072,59 @@
             }
 
             .language-selector {
-                top: 10px;
-                right: 10px;
+                top: 5px;
+                right: 5px;
+                gap: 4px;
+                padding: 4px;
+                border-radius: 8px;
             }
+
+            .lang-btn {
+                padding: 4px 6px;
+                font-size: 0.7rem;
+                border-radius: 4px;
+            }
+            
+            .lang-btn svg {
+                width: 20px !important;
+                height: 12px !important;
+            }
+
+           .settings-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .setting-item {
+                padding: 16px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            
+            .setting-label {
+                font-size: 0.9rem;
+                text-align: center;
+            }
+            
+            .number-input-group {
+                gap: 6px;
+                padding: 4px;
+                align-self: center;
+                width: fit-content;
+            }
+            
+            .number-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+            }
+            
+            .number-display {
+                min-width: 40px;
+                font-size: 0.9rem;
+                padding: 6px 8px;
+            } 
         }
 
         @media (max-width: 480px) {
@@ -1184,6 +1235,86 @@
             
             .usage-details {
                 font-size: 0.7rem;
+            }
+        }
+
+        /* GitHub Credit Footer */
+        .github-credit {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(30, 30, 46, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-md);
+        }
+
+        .github-link:hover {
+            color: var(--text-primary);
+            background: rgba(30, 30, 46, 0.95);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .github-icon {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .github-link:hover .github-icon {
+            transform: scale(1.1);
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .github-credit {
+                bottom: 15px;
+                left: 15px;
+            }
+            
+            .github-link {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                gap: 6px;
+            }
+            
+            .github-icon {
+                width: 14px;
+                height: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .github-credit {
+                bottom: 10px;
+                left: 10px;
+            }
+            
+            .github-link {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+            
+            .github-icon {
+                width: 12px;
+                height: 12px;
             }
         }
     </style>
@@ -1722,7 +1853,7 @@
                 keepTrying: "Don't give up! Regular practice will help you improve.",
                 tipReview: "💡 Tip: Try reviewing the material before your next session for better results.",
                 tipChallenge: "🎯 You're doing great! Challenge yourself with more questions in your next session.",
-                audioUsage: "Audio Usage",
+                audioUsage: "API Audio Usage",
                 characters: "characters",
                 requests: "requests",
                 questionSkipped: "Question skipped",
@@ -1791,7 +1922,7 @@
                 keepTrying: "Non arrenderti! La pratica regolare ti aiuterà a migliorare.",
                 tipReview: "💡 Suggerimento: Prova a rivedere il materiale prima della prossima sessione per risultati migliori.",
                 tipChallenge: "🎯 Stai andando benissimo! Sfidati con più domande nella prossima sessione.",
-                audioUsage: "Utilizzo Audio",
+                audioUsage: "Utilizzo API Audio",
                 characters: "caratteri",
                 requests: "richieste",
                 questionSkipped: "Domanda saltata",
@@ -2641,5 +2772,14 @@
             });
         });
     </script>
+    <!-- GitHub Credit Footer -->
+    <div class="github-credit">
+        <a href="https://github.com/sPappalard" target="_blank" rel="noopener noreferrer" class="github-link">
+            <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+            </svg>
+            <span>Made by sPappalard</span>
+        </a>
+    </div>
 </body>
 </html>
