@@ -154,9 +154,8 @@ Your vocabulary file must have exactly **2 columns**:
 
 ## 🌟 Screenshots
 
-- Main menu with language selection
-### Select languages
-![Gameplay Screenshot](screenshots/1.JPG)
+### Main menu with language selection
+![](screenshots/1.JPG)
 
 ### File upload interface
 ![Gameplay Screenshot](screenshots/2.JPG)
