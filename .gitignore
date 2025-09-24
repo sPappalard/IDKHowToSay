@@ -2,3 +2,5 @@
 .env
 elevenlabs_usage.json
 google-credentials.json
+google_tts_usage.json
+__pycache__/
