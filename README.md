@@ -152,25 +152,25 @@ Your vocabulary file must have exactly **2 columns**:
 - **Self-Learners:** Build custom vocabulary lists based on personal interests
 - **Teachers:** Create interactive vocabulary quizzes for students
 
-## 🌟 Screenshots
+## Screenshots
 
 ### Main menu with language selection
-![](screenshots/1.JPG)
+![Screenshot](screenshots/1.jpg)
 
 ### File upload interface
-![Gameplay Screenshot](screenshots/2.JPG)
+![Screenshot](screenshots/2.jpg)
 
 ### Game Setting
-![Gameplay Screenshot](screenshots/3.JPG)
+![Screenshot](screenshots/3.jpg)
 
 ### Active quiz session with question/answer
-![Gameplay Screenshot](screenshots/4.JPG)
+![Screenshot](screenshots/4.jpg)
 
 ### Progress bar during a session
-![Gameplay Screenshot](screenshots/5.JPG)
+![Screenshot](screenshots/5.jpg)
 
 ### End session - Results screen with performance metrics
-![Gameplay Screenshot](screenshots/6.JPG)
+![Screenshot](screenshots/6.jpg)
 
 
 ## 📄 License
