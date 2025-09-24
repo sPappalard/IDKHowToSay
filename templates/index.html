@@ -264,7 +264,15 @@
             opacity: 1;
             visibility: visible;
             transform: translateY(0) scale(1);
-            z-index: 2000;
+            z-index: 3000;
+        }
+
+        
+
+        /* Oscura gli elementi quando dropdown è aperto */
+        .dropdown-active .custom-select:not(.active) {
+            opacity: 0.3;
+            transition: opacity 0.2s ease;
         }
 
         .select-option {
@@ -276,6 +284,18 @@
             display: flex;
             align-items: center;
             gap: 12px;
+        }
+
+        .select-options.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            z-index: 3000;
+        }
+
+        .custom-select.active {
+            z-index: 3001;
+            position: relative;
         }
 
         .select-option:hover {
@@ -1935,7 +1955,14 @@
         function toggleSelect(selectId) {
             const options = document.getElementById(selectId + '-options');
             const button = document.getElementById(selectId + '-btn');
+            const customSelect = button.closest('.custom-select');
             const isOpen = options.classList.contains('open');
+            
+            // Rimuovi overlay esistente
+            const existingOverlay = document.querySelector('.dropdown-overlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
             
             // Close all other selects
             document.querySelectorAll('.select-options').forEach(opt => {
@@ -1944,11 +1971,46 @@
             document.querySelectorAll('.select-button').forEach(btn => {
                 btn.classList.remove('open');
             });
+            document.querySelectorAll('.custom-select').forEach(select => {
+                select.classList.remove('active');
+            });
             
             if (!isOpen) {
+                document.body.classList.add('dropdown-active');
                 options.classList.add('open');
                 button.classList.add('open');
+                customSelect.classList.add('active');
                 updateSelectOptions();
+            } else {
+                document.body.classList.remove('dropdown-active');
+                closeAllDropdowns();
+            }
+        }
+
+        function closeAllDropdowns() {
+
+            document.body.classList.remove('dropdown-active');
+
+            // Chiudi tutti i dropdown
+            document.querySelectorAll('.select-options').forEach(opt => {
+                opt.classList.remove('open');
+            });
+            document.querySelectorAll('.select-button').forEach(btn => {
+                btn.classList.remove('open');
+            });
+            document.querySelectorAll('.custom-select').forEach(select => {
+                select.classList.remove('active');
+            });
+            
+            // Rimuovi overlay
+            const overlay = document.querySelector('.dropdown-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    if (overlay.parentNode) {
+                        overlay.parentNode.removeChild(overlay);
+                    }
+                }, 200);
             }
         }
 
@@ -2001,13 +2063,8 @@
 
         // Close dropdowns when clicking outside
         document.addEventListener('click', function(event) {
-            if (!event.target.closest('.custom-select')) {
-                document.querySelectorAll('.select-options').forEach(opt => {
-                    opt.classList.remove('open');
-                });
-                document.querySelectorAll('.select-button').forEach(btn => {
-                    btn.classList.remove('open');
-                });
+            if (!event.target.closest('.custom-select') && !event.target.closest('.dropdown-overlay')) {
+                closeAllDropdowns();
             }
         });
 
