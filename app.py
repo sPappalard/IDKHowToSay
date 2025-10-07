@@ -3,11 +3,13 @@ from flask_cors import CORS
 import pandas as pd
 import random
 import re
-import tempfile
 import os
 import requests
+
+# Google API for voice synthesis
 from google.cloud import texttospeech
 from google.oauth2 import service_account
+
 import json
 import base64
 from datetime import datetime
@@ -56,7 +58,7 @@ class EnglishLearningBackend:
         # Initialize usage tracking
         self.init_usage_tracking()
 
-
+    #search for google credentials in ENV variable. First try to interpret them as a JSON, then as a file's path. If it finds nothing, deactive audio 
     def init_google_tts(self):
         """Initialize Google Cloud Text-to-Speech client"""
         try:
@@ -90,6 +92,7 @@ class EnglishLearningBackend:
             logger.error(f"Failed to initialize Google TTS: {e}")
             self.tts_client = None
 
+    #upload or create a JSON file that tracks how many characters have been used for audio this month. This avoids exceeding GOOGLE API free LIMITS
     def init_usage_tracking(self):
         """Initialize or load usage tracking data"""
         try:
@@ -119,6 +122,7 @@ class EnglishLearningBackend:
         except Exception as e:
             logger.error(f"Error saving usage data: {e}")
 
+    #reset the counter every new month
     def check_monthly_reset(self):
         """Reset counter if it's a new month"""
         current_month = datetime.now().strftime('%Y-%m')
@@ -131,6 +135,7 @@ class EnglishLearningBackend:
             self.save_usage_data()
             logger.info("Monthly usage counter reset")
 
+    #check if limits are exceeded or no
     def can_use_audio(self, text_length):
         """Check if we can use audio API within limits"""
         self.check_monthly_reset()
@@ -160,7 +165,7 @@ class EnglishLearningBackend:
             'current_month': self.usage_data['current_month']
         }
 
-    
+    #generate audio using Google Cloud TTS API
     def generate_audio_google_tts(self, text, language):
         """Generate audio using Google Cloud Text-to-Speech API"""
         try:
@@ -212,7 +217,7 @@ class EnglishLearningBackend:
             logger.error(f"Google TTS error: {e}")
             return None, f"Audio generation failed: {str(e)}"
 
-    # [Mantieni tutti gli altri metodi della classe originale...]
+    #manages multiple translation variants like (house/home or house,home or house(home))
     def parse_variants(self, text):
         if not text or not isinstance(text, str):
             return []
@@ -229,6 +234,7 @@ class EnglishLearningBackend:
         variants = []
         original_text = text
         
+        #finds all variants using regular expressions, cleans them of spaces and adds them to a duplicate-free list
         while True:
             found_variant = False
             for pattern in patterns:
@@ -260,6 +266,7 @@ class EnglishLearningBackend:
         
         return clean_variants if clean_variants else [original_text.strip()]
 
+    #converts any google sheets URL to a CSV export URL. Extracts the sheet ID from the URL e creates direct link to download the data as a CSV
     def convert_google_sheets_url(self, url):
         patterns = [
             r'https://docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)/edit.*',
@@ -275,6 +282,7 @@ class EnglishLearningBackend:
         
         return url
 
+    
     def load_google_sheet(self, url):
         try:
             csv_url = self.convert_google_sheets_url(url)
@@ -294,6 +302,7 @@ class EnglishLearningBackend:
         except Exception as e:
             return {"success": False, "message": f"Loading error: {str(e)}"}
 
+    #Takes the first two coloumns of the Excel/CSV file, ignoring blank rows. For each row
     def process_vocabulary_data(self, df):
         vocabulary_data = df.iloc[:, :2].dropna()
         
@@ -302,6 +311,10 @@ class EnglishLearningBackend:
             first_raw = str(row.iloc[0]).strip()
             second_raw = str(row.iloc[1]).strip()
             
+            #creates a dictionary with:
+            #-first_display/second_display: original text to display
+            #-first_variants/second_variants: all accepted variants
+            #first_main/second_main: main variant (for audio)
             if first_raw and second_raw and first_raw.lower() != 'nan' and second_raw.lower() != 'nan':
                 first_variants = self.parse_variants(first_raw)
                 second_variants = self.parse_variants(second_raw)
@@ -356,6 +369,7 @@ class EnglishLearningBackend:
             "usage_info": self.get_usage_info() if self.audio_enabled else None
         }
 
+    #start a new game sesssion, reset the counters and load the first question 
     def start_game(self, mode, max_questions, max_passes):
         if not self.vocabulary:
             return {"success": False, "message": "No vocabulary loaded!"}
@@ -371,6 +385,7 @@ class EnglishLearningBackend:
         
         return self.next_question()
 
+    #picks a random word from vocabulary, increments the question counter, hides the solution
     def next_question(self):
         if not self.game_active or self.questions_asked >= self.max_questions:
             return self.end_game()
@@ -379,6 +394,7 @@ class EnglishLearningBackend:
         self.questions_asked += 1
         self.solution_visible = False
         
+        #create the text of the question based on the mode (first->second language or second->first language)
         if self.current_mode == "first_second":
             question_text = f"Translate to second language:\n\n'{self.current_word['first_display']}'"
             question_type = "first_second"
@@ -421,6 +437,7 @@ class EnglishLearningBackend:
         self.solution_visible = False
         return {"success": True, "solution_visible": False}
 
+    #cleans up user response. Gets all correct variants based on the mode
     def check_answer(self, user_answer):
         if not self.game_active or not self.current_word:
             return {"success": False, "message": "No active question"}
@@ -434,6 +451,7 @@ class EnglishLearningBackend:
             correct_variants = [var.lower() for var in self.current_word['first_variants']]
             display_answer = self.current_word['first_display']
         
+        #Compare the answer with variants: if it is correct +1 point, if it is wrong -1 point and show the solution
         if user_answer in correct_variants:
             self.score += 1
             result = {
@@ -479,6 +497,7 @@ class EnglishLearningBackend:
         else:
             return {"success": False, "message": "No more passes available!"}
 
+    #smart logic: determines which word to play (question or solution) and in which language (based on what is currently visible on the screen )
     def get_audio(self):
         """Get audio for current question or solution"""
         if not self.game_active or not self.current_word or not self.audio_enabled:
@@ -549,11 +568,12 @@ class EnglishLearningBackend:
 # Global backend instance
 backend = EnglishLearningBackend()
 
-# Routes
+# Routes (main HTML page)
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# downloads file from static/example
 @app.route('/static/examples/<filename>')
 def download_example(filename):
     try:
@@ -561,6 +581,7 @@ def download_example(filename):
     except:
         return jsonify({"error": "File not found"}), 404
 
+# FE: receives the language selected by the user (body JSON with first and second language) -->BE: configures them with set_languages
 @app.route('/api/set_languages', methods=['POST'])
 def api_set_languages():
     data = request.get_json()
@@ -570,6 +591,7 @@ def api_set_languages():
     result = backend.set_languages(first_lang, second_lang)
     return jsonify(result)
 
+# FE: receives JSON with google sheet URL--> BE:load google sheet 
 @app.route('/api/load_google_sheet', methods=['POST'])
 def api_load_google_sheet():
     data = request.get_json()
@@ -581,6 +603,7 @@ def api_load_google_sheet():
     result = backend.load_google_sheet(url)
     return jsonify(result)
 
+# FE: receives form-data file upload (file excel) --> BE: load file excel 
 @app.route('/api/load_excel', methods=['POST'])
 def api_load_excel():
     if 'file' not in request.files:
@@ -593,6 +616,7 @@ def api_load_excel():
     result = backend.load_excel(file, file.filename)
     return jsonify(result)
 
+# FE: receives JSON with mode,max_questions,max_passes --> BE: start_game with all the parameters 
 @app.route('/api/start_game', methods=['POST'])
 def api_start_game():
     data = request.get_json()
@@ -603,11 +627,14 @@ def api_start_game():
     result = backend.start_game(mode, max_questions, max_passes)
     return jsonify(result)
 
+#return next_question
 @app.route('/api/next_question', methods=['GET'])
 def api_next_question():
     result = backend.next_question()
     return jsonify(result)
 
+#all these routes call their respective methods
+#----------------------------------------------------
 @app.route('/api/show_solution', methods=['POST'])
 def api_show_solution():
     result = backend.show_solution()
@@ -635,7 +662,9 @@ def api_pass_question():
 def api_get_audio():
     result = backend.get_audio()
     return jsonify(result)
+#------------------------------------------------------
 
+#return usage info
 @app.route('/api/usage_info', methods=['GET'])
 def api_usage_info():
     return jsonify(backend.get_usage_info())
@@ -645,6 +674,7 @@ def api_end_game():
     result = backend.end_game()
     return jsonify(result)
 
+#return a small summary of the current state 
 @app.route('/api/status', methods=['GET'])
 def api_status():
     return jsonify({
