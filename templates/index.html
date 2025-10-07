@@ -1809,7 +1809,7 @@
 
         let usageInfo = null;
 
-        // Translations
+        // Translations: all strings transleted to support multilingual interface
         const translations = {
             en: {
                 mainTitle: "🤷 IDK how to say",
@@ -1958,7 +1958,7 @@
             const customSelect = button.closest('.custom-select');
             const isOpen = options.classList.contains('open');
             
-            // Rimuovi overlay esistente
+            // remove existing Overlay
             const existingOverlay = document.querySelector('.dropdown-overlay');
             if (existingOverlay) {
                 existingOverlay.remove();
@@ -1991,7 +1991,7 @@
 
             document.body.classList.remove('dropdown-active');
 
-            // Chiudi tutti i dropdown
+            // close all dropdown
             document.querySelectorAll('.select-options').forEach(opt => {
                 opt.classList.remove('open');
             });
@@ -2002,7 +2002,7 @@
                 select.classList.remove('active');
             });
             
-            // Rimuovi overlay
+            // remove overlay
             const overlay = document.querySelector('.dropdown-overlay');
             if (overlay) {
                 overlay.classList.remove('active');
@@ -2020,9 +2020,9 @@
             
             selectedLanguages[type] = value;
             
-            // Aggiorna il testo nel pulsante con la traduzione corretta
-            const flag = display.split(' ')[0]; // Prende solo la bandiera/emoji
-            const translatedName = translations[currentUILanguage][value]; // Prende il nome tradotto
+            // update the tet in the button with the correct translation
+            const flag = display.split(' ')[0]; // takes only the emoticon (flag)
+            const translatedName = translations[currentUILanguage][value]; // takes translated name
             selectedText.textContent = flag + ' ' + translatedName;
             
             // Close the dropdown
@@ -2080,7 +2080,7 @@
                 }
             });
 
-            // Update all text elements
+            // finds all elements with the data-text, looks up the corresponding translation and updates the text
             document.querySelectorAll('[data-text]').forEach(element => {
                 const key = element.dataset.text;
                 if (translations[lang] && translations[lang][key]) {
@@ -2103,17 +2103,17 @@
             // Update modal content language
             updateModalLanguage(lang);
 
-            // Aggiorna i testi dei pulsanti selezionati nei menu
+            // update the texts of selected buttons in menus
             const firstBtn = document.getElementById('first-language-btn');
             const secondBtn = document.getElementById('second-language-btn');
             const firstSelected = firstBtn.querySelector('.selected-text');
             const secondSelected = secondBtn.querySelector('.selected-text');
 
-            // Aggiorna primo menu
+            // updates first menu
             const firstFlag = firstSelected.textContent.split(' ')[0];
             firstSelected.textContent = firstFlag + ' ' + translations[lang][selectedLanguages.first];
 
-            // Aggiorna secondo menu  
+            // updates second menu  
             const secondFlag = secondSelected.textContent.split(' ')[0];
             secondSelected.textContent = secondFlag + ' ' + translations[lang][selectedLanguages.second];
         }
@@ -2164,7 +2164,7 @@
                     }
                     updateAudioStatus();
                     
-                    // SE L'AUDIO È ABILITATO MA NON ABBIAMO USAGE INFO, RICHIEDILA
+                    // if audio is enabled but we don't have usage info, request it
                     if (gameState.audioEnabled && !usageInfo) {
                         fetch(`${API_BASE_URL}/usage_info`)
                         .then(response => response.json())
@@ -2190,12 +2190,12 @@
                 statusEl.className = 'status success';
                 if (audioBtn) audioBtn.disabled = false;
                 
-                // Mostra info utilizzo se disponibili
+                // show usage info (if they are available)
                 if (usageInfo) {
                     updateUsageDisplay(usageInfo);
                 }
             } else {
-                // Determina il motivo della disattivazione
+                // Determine the reason for deactivation
                 if (selectedLanguages.first === 'other' || selectedLanguages.second === 'other') {
                     statusEl.innerHTML = `<span>🔇 ${translations[currentUILanguage].audioDisabledOther}</span>`;
                 } else {
@@ -2204,7 +2204,7 @@
                 statusEl.className = 'status error';
                 if (audioBtn) audioBtn.disabled = true;
                 
-                // Nascondi info utilizzo
+                // hide usage info
                 const usageElement = document.getElementById('usage-display');
                 if (usageElement) {
                     usageElement.style.display = 'none';
@@ -2212,7 +2212,7 @@
             }
         }
 
-        // Funzione per aggiornare il display dell'utilizzo audio
+        // Function to update the audio usage display
         function updateUsageDisplay(usage) {
             if (!usage) return;
             
@@ -2223,14 +2223,14 @@
                 usageElement = document.createElement('div');
                 usageElement.id = 'usage-display';
                 
-                // Trova il posto giusto dove inserirlo
+                // finde the right place whee insert it
                 const audioStatus = document.getElementById('audio-status');
                 if (audioStatus && audioStatus.parentNode) {
                     audioStatus.parentNode.insertBefore(usageElement, audioStatus.nextSibling);
                 }
             }
             
-            // Assicurati che sia sempre visibile quando dovrebbe esserlo
+            // Make sure it is always visible when it should be
             usageElement.style.display = 'block';
             
             const percentage = Math.round((usage.characters_used / usage.characters_limit) * 100);
@@ -2587,9 +2587,9 @@
                         document.getElementById('solution-btn').querySelector('span').textContent = translations[currentUILanguage].hideSolution;
                     }
                     
-                    // AGGIUNGI QUESTE RIGHE PER NASCONDERE I PULSANTI
+                    // hide buttons 
                     document.getElementById('check-btn').style.display = 'none';
-                    document.getElementById('pass-btn').style.display = 'none'; // Nascondi skip question
+                    document.getElementById('pass-btn').style.display = 'none'; 
                     document.getElementById('next-btn').style.display = 'inline-flex';
                     gameState.waitingForNext = true;
                 } else {
@@ -2608,13 +2608,13 @@
                 return;
             }
             
-            // Controlla se abbiamo ancora caratteri disponibili
+            // Check if we still have fonts available 
             if (usageInfo && usageInfo.characters_remaining <= 0) {
                 alert(translations[currentUILanguage].limitReached);
                 return;
             }
             
-            // Disabilita temporaneamente il pulsante
+            // Temporary disable the button 
             const audioBtn = document.getElementById('audio-btn');
             if (audioBtn) {
                 audioBtn.disabled = true;
@@ -2629,15 +2629,15 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Audio API response:', data); // DEBUG
+                console.log('Audio API response:', data); 
                 
                 if (data.success && data.audio) {
-                    console.log('Attempting to play audio...'); // DEBUG
+                    console.log('Attempting to play audio...'); 
                     
-                    // Riproduci l'audio usando base64
+                    // Play audio using base64
                     const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
                     
-                    // Aggiungi event listeners per debug
+                    // add event listeners for debugging
                     audio.addEventListener('loadstart', () => console.log('Audio loading started'));
                     audio.addEventListener('canplay', () => console.log('Audio can start playing'));
                     audio.addEventListener('ended', () => console.log('Audio playback ended'));
@@ -2650,7 +2650,7 @@
                         alert('Audio playback failed. Try clicking play after the page has loaded completely.');
                     });
                     
-                    // Aggiorna info utilizzo
+                    // update usage info
                     if (data.usage_info) {
                         usageInfo = data.usage_info;
                         updateUsageDisplay(usageInfo);
@@ -2665,10 +2665,10 @@
                 alert('Audio service temporarily unavailable');
             })
             .finally(() => {
-                // Riabilita il pulsante
+                // re-enable the button
                 if (audioBtn) {
                     audioBtn.innerHTML = '🔊';
-                    // Riabilita solo se abbiamo ancora caratteri disponibili
+                    // re-enable only if we still have fonts available
                     if (usageInfo && usageInfo.characters_remaining > 0) {
                         audioBtn.disabled = false;
                     }
